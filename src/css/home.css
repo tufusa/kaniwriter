@@ -1,0 +1,20 @@
+#home .button {
+    background-color: #ff3227;
+}
+::file-selector-button {
+    display: none;
+}
+.file {
+    background-color: #ff3227;
+}
+.file-form {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width:20rem;
+    margin: 0 auto;
+}
+#home {
+    max-width: 1200px;
+    margin: 0 auto;
+}
