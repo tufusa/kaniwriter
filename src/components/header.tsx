@@ -12,9 +12,9 @@ export function Header() {
           variant="h4"
           component="div"
           color="inherit"
-          fontFamily="Roboto"
+          fontFamily="'M PLUS Rounded 1c', sans-serif"
         >
-          カニロボ
+          書き込みツール
         </Typography>
         <Box sx={{ flexGrow: 1 }}>
           {pages.map((page) => (
@@ -26,7 +26,13 @@ export function Header() {
                 margin: "0 1rem",
               }}
             >
-              {page}
+              <Typography
+                component="div"
+                color="inherit"
+                fontFamily="'M PLUS Rounded 1c', sans-serif"
+              >
+                {page}
+              </Typography>
             </Button>
           ))}
         </Box>
