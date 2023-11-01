@@ -1,19 +1,8 @@
-import { useState } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Home } from "./pages/home";
+import { RouterProvider } from "react-router-dom";
+
+import { router } from "routes/router";
 import "./App.css";
-import { Header } from "./components/header";
-import SerialProvider from "./pages/SerialProvider";
 
-function App() {
-  return (
-    <BrowserRouter>
-      <Header />
-      <Routes>
-        <Route path="/" element={<Home />} />
-      </Routes>
-    </BrowserRouter>
-  );
-}
-
-export default App;
+export const App = () => {
+  return <RouterProvider router={router} />;
+};
