@@ -11,15 +11,15 @@ import {
 import { Typography } from "@mui/material";
 import "css/home.css";
 
-import Rboard from "Rboard.png";
-import ESP32 from "ESP32.png";
+import RBoard from "/RBoard.png";
+import ESP32 from "/ESP32.png";
 import { Flag, Usb } from "@mui/icons-material";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 
 const targets = [
   {
     title: "Rboard",
-    image: Rboard,
+    image: RBoard,
   },
   {
     title: "ESP32",

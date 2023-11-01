@@ -1,5 +1,5 @@
 import { AppBar, Box, Button, Toolbar, Typography } from "@mui/material";
-import icon from "logo.png";
+import icon from "/logo.png";
 import "css/header.css";
 
 export function Header() {
