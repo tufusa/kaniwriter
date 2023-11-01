@@ -1,6 +1,6 @@
 import { AppBar, Box, Button, Toolbar, Typography } from "@mui/material";
-import icon from "/logo.png";
-import "../css/header.css";
+import icon from "logo.png";
+import "css/header.css";
 
 export function Header() {
   const pages = ["ホーム", "書き込みツール", "参考資料"];

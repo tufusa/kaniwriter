@@ -7,16 +7,14 @@ import {
   radioClasses,
   RadioGroup,
   Sheet,
-  styled,
 } from "@mui/joy";
 import { Typography } from "@mui/material";
-import "../css/home.css";
+import "css/home.css";
 
-import Rboard from "/public/Rboard.png";
-import ESP32 from "/public/ESP32.png";
+import Rboard from "Rboard.png";
+import ESP32 from "ESP32.png";
 import { Flag, Usb } from "@mui/icons-material";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
-import SerialProvider, { useSerial } from "./SerialProvider";
 
 const targets = [
   {
@@ -28,8 +26,6 @@ const targets = [
     image: ESP32,
   },
 ];
-
-
 
 export function Home() {
   const [step, setStep] = useState<number>(0);
