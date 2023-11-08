@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Box,
   Button,
@@ -8,13 +8,15 @@ import {
   RadioGroup,
   Sheet,
 } from "@mui/joy";
-import { Typography } from "@mui/material";
+import { Input, Typography } from "@mui/material";
+import Ansi from "ansi-to-react";
 import "css/home.css";
 
 import RBoard from "/RBoard.png";
 import ESP32 from "/ESP32.png";
 import { Flag, Usb } from "@mui/icons-material";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
+import { MrubyWriterConnector } from "../libs/mrubyWriterConnector";
 
 const targets = [
   {
@@ -27,43 +29,46 @@ const targets = [
   },
 ];
 
-export function Home() {
+export const Home = () => {
   const [step, setStep] = useState<number>(0);
   const [target, setTarget] = useState<string>("");
-  let port;
-  const [baud, setBaud] = useState<number>(115200);
-  async function onConnectButtonClick() {
-    try {
-      port = await navigator.serial.requestPort();
-      await port.open({ baudRate: baud });
+  const [command, setCommand] = useState("");
+  const [log, setLog] = useState<string[]>([]);
+  const [connector] = useState<MrubyWriterConnector>(
+    new MrubyWriterConnector(
+      "ESP32",
+      (message) => console.log({ message }),
+      (_, buffer) => setLog([...buffer])
+    )
+  );
 
-      while (true) {
-        const reader = port.readable.getReader();
-        try {
-          while (true) {
-            const { value, done } = await reader.read();
-            if (done) {
-              break;
-            }
-            console.log(value);
-          }
-        } catch (error) {
-          console.error(error);
-        } finally {
-          reader.releaseLock();
-        }
-      }
-    } catch (error) {
-      console.error(error);
+  const connect = async () => {
+    const res = await connector.connect(
+      async () => await navigator.serial.requestPort()
+    );
+    if (res.isFailure()) {
+      alert(`ポートを取得できませんでした。\n${res.error}`);
+      console.log(res.error);
+      return;
     }
-  }
+    await read();
+  };
 
-  async function sendSerial() {
-    const encoder = new TextEncoder();
-    const writer = port.writable.getWriter();
-    await writer.write(encoder.encode("Hello World"));
-    writer.releaseLock();
-  }
+  const read = async () => {
+    const res = await connector.startListen();
+    if (res.isFailure()) {
+      alert(`受信中にエラーが発生しました。\n${res.error}`);
+      console.log(res);
+    }
+  };
+
+  const send = async (text: string) => {
+    const res = await connector.sendCommand(text);
+    if (res.isFailure()) {
+      alert(`送信中にエラーが発生しました。\n${res.error}`);
+      console.log(res);
+    }
+  };
 
   return (
     <div id={"home"}>
@@ -157,19 +162,20 @@ export function Home() {
         <Box sx={{ display: "flex", justifyContent: "center", margin: "1rem" }}>
           <Button
             //disabled={step !== 2}
-            onClick={() => {
-              if (step === 2) setStep(3);
-              onConnectButtonClick();
-            }}
+            onClick={connect}
           >
             接続
             <Usb />
           </Button>
         </Box>
 
+        <Log log={log} />
+        <Input type="text" onChange={(e) => setCommand(e.target.value)} />
+        <Input type="submit" onClick={() => send(command)} value="Send" />
+
         {/* 書き込み中 */}
         <Box sx={{ display: "flex", justifyContent: "center", margin: "1rem" }}>
-          <Button disabled={step !== 3} onClick={sendSerial}>
+          <Button>
             書き込み
             <Flag />
           </Button>
@@ -178,4 +184,34 @@ export function Home() {
       </Box>
     </div>
   );
-}
+};
+
+const Log = (props: { log: string[] }) => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    scrollRef.current?.scroll({
+      top: scrollRef.current.scrollHeight,
+    });
+  });
+
+  return (
+    <Sheet
+      variant="outlined"
+      ref={scrollRef}
+      sx={{
+        m: "0 auto",
+        px: "0.5rem",
+        width: "85%",
+        height: "20rem",
+        textAlign: "left",
+        overflowY: "auto",
+      }}
+    >
+      {props.log.map((text, index) => (
+        <div key={`log-${index}`}>
+          <Ansi>{text}</Ansi>
+        </div>
+      ))}
+    </Sheet>
+  );
+};
