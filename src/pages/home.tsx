@@ -41,6 +41,18 @@ export const Home = () => {
       (_, buffer) => setLog([...buffer])
     )
   );
+  const [code, setCode] = useState<Uint8Array>();
+
+  useEffect(() => {
+    (async () => {
+      await fetch("./main.mrb").then(async (res) => {
+        if (!res.body) return;
+
+        const { value } = await res.body?.getReader().read();
+        setCode(value);
+      });
+    })();
+  }, []);
 
   const connect = async () => {
     const res = await connector.connect(
@@ -48,7 +60,7 @@ export const Home = () => {
     );
     if (res.isFailure()) {
       alert(`ポートを取得できませんでした。\n${res.error}`);
-      console.log(res.error);
+      console.log(res);
       return;
     }
     await read();
@@ -175,7 +187,9 @@ export const Home = () => {
 
         {/* 書き込み中 */}
         <Box sx={{ display: "flex", justifyContent: "center", margin: "1rem" }}>
-          <Button>
+          <Button
+            onClick={async () => code && (await connector.writeCode(code))}
+          >
             書き込み
             <Flag />
           </Button>
