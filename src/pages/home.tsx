@@ -188,11 +188,30 @@ export const Home = () => {
 
 const Log = (props: { log: string[] }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [autoScroll, setAutoScroll] = useState(true);
+
   useEffect(() => {
+    if (!autoScroll) return;
+
     scrollRef.current?.scroll({
       top: scrollRef.current.scrollHeight,
     });
   });
+
+  useEffect(() => {
+    const onScrollEnd = () => {
+      const current = scrollRef.current;
+      if (!current) return;
+
+      console.log("scrollend");
+      const currentScroll = current.clientHeight + current.scrollTop;
+      setAutoScroll(currentScroll == current.scrollHeight);
+    };
+
+    scrollRef.current?.addEventListener("scrollend", onScrollEnd);
+    return () =>
+      scrollRef.current?.removeEventListener("scrollend", onScrollEnd);
+  }, []);
 
   return (
     <Sheet
@@ -205,6 +224,7 @@ const Log = (props: { log: string[] }) => {
         height: "20rem",
         textAlign: "left",
         overflowY: "auto",
+        resize: "vertical",
       }}
     >
       {props.log.map((text, index) => (
