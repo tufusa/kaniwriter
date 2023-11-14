@@ -3,9 +3,8 @@ import { Result, Success, Failure } from "./result";
 
 export type Target = "ESP32" | "RBoard";
 
-export type Logger = (message: string) => void;
-export type Listener = (message: string, buffer: string[]) => void;
-export type Unsubscribe = () => void;
+type Logger = (message: string) => void;
+type Listener = (message: string, buffer: string[]) => void;
 
 type Reader = ReadableStreamDefaultReader<Uint8Array>;
 type Writer = WritableStreamDefaultWriter<Uint8Array>;
@@ -13,6 +12,11 @@ type Event =
   | "AttemptToEnterWriteMode"
   | "SuccessToExitWriteMode"
   | "AttemptToWriteCode";
+
+const baudRates: Record<Target, number> = {
+  ESP32: 115200,
+  RBoard: 19200,
+};
 
 export class MrubyWriterConnector {
   private port: SerialPort | undefined;
@@ -23,20 +27,19 @@ export class MrubyWriterConnector {
   private encoder: TextEncoder;
   private decoder: TextDecoder;
   private buffer: string[];
-
-  readonly target: Target;
+  private target: Target | undefined;
 
   private currentSubReader: Reader | undefined;
   private jobQueue: Promise<any>[];
 
-  constructor(
-    target: Target,
-    logger: Logger,
-    onListen: Listener | undefined = undefined
-  ) {
-    this.target = target;
-    this.logger = logger;
-    this.onListen = onListen;
+  constructor(config: {
+    target?: Target;
+    logger: Logger;
+    onListen?: Listener;
+  }) {
+    this.target = config.target;
+    this.logger = config.logger;
+    this.onListen = config.onListen;
     this.buffer = [];
     this.writeMode = false;
     this.encoder = new TextEncoder();
@@ -101,19 +104,11 @@ export class MrubyWriterConnector {
         this.currentSubReader.releaseLock();
       }
     } catch (error) {
-      return Failure.error("Error excepted while reading1.", { cause: error });
+      return Failure.error("Error excepted while reading.", { cause: error });
     } finally {
+      this.currentSubReader?.releaseLock();
       await this.close();
     }
-  }
-
-  async executeJobs() {
-    for (const job of this.jobQueue) {
-      console.log(job);
-      const res = await job;
-      console.log({ jobRes: res });
-    }
-    this.jobQueue = [];
   }
 
   async sendCommand(
@@ -128,7 +123,6 @@ export class MrubyWriterConnector {
     }
 
     const send = new Promise<Result<string, Error>>(async (resolve, reject) => {
-      console.log("awaited!");
       const readerRes = this.getSubReader();
       const writerRes = this.getWriter();
       if (readerRes.isFailure()) {
@@ -218,9 +212,29 @@ export class MrubyWriterConnector {
     return await write;
   }
 
+  setTarget(target: Target) {
+    this.target = target;
+  }
+
+  private async executeJobs() {
+    for (const job of this.jobQueue) {
+      try {
+        const res = await job;
+        console.log(res);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    this.jobQueue = [];
+  }
+
   private async open(): Promise<Result<null, Error>> {
+    if (!this.target) {
+      return Failure.error("No target selected.");
+    }
+
     try {
-      await this.port!.open({ baudRate: 115200 });
+      await this.port!.open({ baudRate: baudRates[this.target] });
       return Success.value(null);
     } catch (error) {
       return Failure.error("Cannot open serial port.", { cause: error });
@@ -405,7 +419,7 @@ export class MrubyWriterConnector {
         line += res.value;
         console.log({ line });
 
-        if (line.endsWith("\r\n\r\n")) {
+        if (line.endsWith("\r\n")) {
           return Success.value(line);
         }
       }

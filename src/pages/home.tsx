@@ -16,11 +16,11 @@ import RBoard from "/RBoard.png";
 import ESP32 from "/ESP32.png";
 import { Flag, Usb } from "@mui/icons-material";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
-import { MrubyWriterConnector } from "../libs/mrubyWriterConnector";
+import { MrubyWriterConnector, Target } from "../libs/mrubyWriterConnector";
 
-const targets = [
+const targets: Array<{ title: Target; image: string }> = [
   {
-    title: "Rboard",
+    title: "RBoard",
     image: RBoard,
   },
   {
@@ -31,15 +31,15 @@ const targets = [
 
 export const Home = () => {
   const [step, setStep] = useState<number>(0);
-  const [target, setTarget] = useState<string>("");
+  const [target, setTarget] = useState<Target>("RBoard");
   const [command, setCommand] = useState("");
   const [log, setLog] = useState<string[]>([]);
   const [connector] = useState<MrubyWriterConnector>(
-    new MrubyWriterConnector(
-      "ESP32",
-      (message) => console.log({ message }),
-      (_, buffer) => setLog([...buffer])
-    )
+    new MrubyWriterConnector({
+      target,
+      logger: (message) => console.log({ message }),
+      onListen: (_, buffer) => setLog([...buffer]),
+    })
   );
   const [code, setCode] = useState<Uint8Array>();
 
@@ -145,8 +145,9 @@ export const Home = () => {
                   value={value.title}
                   checkedIcon={<CheckCircleRoundedIcon />}
                   checked={target === value.title}
-                  onChange={(e) => {
-                    setTarget(e.target.value);
+                  onChange={() => {
+                    setTarget(value.title);
+                    connector.setTarget(value.title);
                     if (step === 0) setStep(1);
                   }}
                 />
