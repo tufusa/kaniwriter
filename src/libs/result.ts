@@ -19,6 +19,10 @@ export class Success<T> implements IResult {
   isFailure(): this is Failure<never> {
     return false;
   }
+
+  static value<T>(value: T): Success<T> {
+    return new Success<T>(value);
+  }
 }
 
 export class Failure<E extends Error> implements IResult {
@@ -40,6 +44,6 @@ export class Failure<E extends Error> implements IResult {
     message: string,
     options: ErrorOptions | undefined = undefined
   ): Failure<Error> {
-    return new Failure(new Error(message, options));
+    return new Failure<Error>(new Error(message, options));
   }
 }
