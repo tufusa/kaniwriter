@@ -37,8 +37,8 @@ export const Home = () => {
   const [connector] = useState<MrubyWriterConnector>(
     new MrubyWriterConnector({
       target,
-      logger: (message) => console.log({ message }),
-      onListen: (_, buffer) => setLog([...buffer]),
+      log: (message, params) => console.log(message, params),
+      onListen: (buffer) => setLog([...buffer]),
     })
   );
   const [code, setCode] = useState<Uint8Array>();
@@ -68,17 +68,32 @@ export const Home = () => {
 
   const read = async () => {
     const res = await connector.startListen();
+    console.log(res);
     if (res.isFailure()) {
-      alert(`受信中にエラーが発生しました。\n${res.error}`);
-      console.log(res);
+      alert(
+        `受信中にエラーが発生しました。\n${res.error}\ncause: ${res.error.cause}`
+      );
     }
   };
 
   const send = async (text: string) => {
     const res = await connector.sendCommand(text);
+    console.log(res);
     if (res.isFailure()) {
-      alert(`送信中にエラーが発生しました。\n${res.error}`);
-      console.log(res);
+      alert(
+        `送信中にエラーが発生しました。\n${res.error}\ncause: ${res.error.cause}`
+      );
+    }
+  };
+
+  const writeCode = async () => {
+    if (!code) return;
+    const res = await connector.writeCode(code, { execute: true });
+    console.log(res);
+    if (res.isFailure()) {
+      alert(
+        `書き込み中にエラーが発生しました。\n${res.error}\ncause: ${res.error.cause}`
+      );
     }
   };
 
@@ -188,9 +203,7 @@ export const Home = () => {
 
         {/* 書き込み中 */}
         <Box sx={{ display: "flex", justifyContent: "center", margin: "1rem" }}>
-          <Button
-            onClick={async () => code && (await connector.writeCode(code))}
-          >
+          <Button onClick={writeCode}>
             書き込み
             <Flag />
           </Button>

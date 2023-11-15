@@ -3,15 +3,13 @@ import { Result, Success, Failure } from "./result";
 
 export type Target = "ESP32" | "RBoard";
 
-type Logger = (message: string) => void;
-type Listener = (message: string, buffer: string[]) => void;
+type Logger = (message?: any, ...params: any[]) => void;
+type Listener = (buffer: string[]) => void;
 
 type Reader = ReadableStreamDefaultReader<Uint8Array>;
 type Writer = WritableStreamDefaultWriter<Uint8Array>;
-type Event =
-  | "AttemptToEnterWriteMode"
-  | "SuccessToExitWriteMode"
-  | "AttemptToWriteCode";
+type Event = "AttemptToEnterWriteMode" | "SuccessToExitWriteMode";
+type Job = { job: Promise<any>; description: string };
 
 const baudRates: Record<Target, number> = {
   ESP32: 115200,
@@ -20,7 +18,7 @@ const baudRates: Record<Target, number> = {
 
 export class MrubyWriterConnector {
   private port: SerialPort | undefined;
-  private logger: Logger;
+  private log: Logger;
   private onListen: Listener | undefined;
   private subReadable: ReadableStream<Uint8Array> | undefined;
   private writeMode: Boolean;
@@ -30,21 +28,21 @@ export class MrubyWriterConnector {
   private target: Target | undefined;
 
   private currentSubReader: Reader | undefined;
-  private jobQueue: Promise<any>[];
+  private jobQueue: Job[];
 
-  constructor(config: {
-    target?: Target;
-    logger: Logger;
-    onListen?: Listener;
-  }) {
+  constructor(config: { target?: Target; log: Logger; onListen?: Listener }) {
     this.target = config.target;
-    this.logger = config.logger;
+    this.log = config.log;
     this.onListen = config.onListen;
     this.buffer = [];
     this.writeMode = false;
     this.encoder = new TextEncoder();
     this.decoder = new TextDecoder();
     this.jobQueue = [];
+  }
+
+  setTarget(target: Target) {
+    this.target = target;
   }
 
   async connect(port: () => Promise<SerialPort>): Promise<Result<null, Error>> {
@@ -75,27 +73,29 @@ export class MrubyWriterConnector {
     try {
       const [mainReadable, subReadable] = this.port.readable.tee();
       this.subReadable = subReadable;
+
       const decode = (data: Uint8Array) => this.decoder.decode(data);
       const handleText = (text: string) => this.handleText(text);
+      const log = this.log;
       const handleEvent = (event: Event | null) => this.handleEvent(event);
+      const decodeStream = new TransformStream<Uint8Array, string>({
+        transform(chunk, controller) {
+          controller.enqueue(decode(chunk));
+        },
+      });
+      const logStream = new WritableStream<string>({
+        async write(chunk) {
+          log("Received", { chunk });
 
-      mainReadable
-        .pipeThrough(
-          new TransformStream<Uint8Array, string>({
-            transform(chunk, controller) {
-              controller.enqueue(decode(chunk));
-            },
-          })
-        )
-        .pipeTo(
-          new WritableStream<string>({
-            async write(chunk) {
-              const event = handleText(chunk);
-              const res = await handleEvent(event.value.event);
-              console.log(res);
-            },
-          })
-        );
+          const event = handleText(chunk);
+          if (event.value.event) log("Event detected", event.value);
+
+          const res = await handleEvent(event.value.event);
+          if (res) log("Event handled", res);
+        },
+      });
+
+      mainReadable.pipeThrough(decodeStream).pipeTo(logStream);
 
       while (true) {
         this.currentSubReader = subReadable.getReader();
@@ -111,10 +111,7 @@ export class MrubyWriterConnector {
     }
   }
 
-  async sendCommand(
-    command: string | Uint8Array,
-    option: { verbose: boolean } = { verbose: true }
-  ): Promise<Result<string, Error>> {
+  async sendCommand(command: string): Promise<Result<string, Error>> {
     if (!this.port) {
       return Failure.error("No port.");
     }
@@ -124,7 +121,48 @@ export class MrubyWriterConnector {
 
     await this.completeJobs();
 
-    const send = new Promise<Result<string, Error>>(async (resolve, reject) => {
+    this.handleText(`\r\n> ${command}\r\n`);
+    console.log("Send", { command });
+
+    return await this.sendData(this.encoder.encode(command));
+  }
+
+  async writeCode(
+    binary: Uint8Array,
+    option?: { execute: boolean }
+  ): Promise<Result<null, Error>> {
+    if (!this.port) {
+      return Failure.error("No port.");
+    }
+    if (!this.writeMode) {
+      return Failure.error("Not write mode now.");
+    }
+
+    await this.completeJobs();
+
+    const clearRes = await this.sendCommand("clear");
+    if (clearRes.isFailure()) return clearRes;
+
+    console.log(clearRes);
+    const writeSizeRes = await this.sendCommand(`write ${binary.byteLength}`);
+    if (writeSizeRes.isFailure()) return writeSizeRes;
+
+    const writeRes = await this.sendData(binary);
+    if (writeRes.isFailure()) return writeRes;
+
+    if (option?.execute) {
+      await this.sendCommand("execute");
+    }
+
+    return Success.value(null);
+  }
+
+  private async sendData(chunk: Uint8Array): Promise<Result<string, Error>> {
+    if (!this.port) {
+      return Failure.error("No port.");
+    }
+
+    const send = new Promise<Result<string, Error>>(async (resovle, reject) => {
       const readerRes = this.getSubReader();
       const writerRes = this.getWriter();
       if (readerRes.isFailure()) {
@@ -139,117 +177,71 @@ export class MrubyWriterConnector {
       this.currentSubReader = readerRes.value;
       const writer = writerRes.value;
 
-      try {
-        const bin =
-          typeof command === "string" ? this.encoder.encode(command) : command;
-
-        await writer.ready;
-        await writer.write(bin);
-
-        if (option.verbose) {
-          this.handleText(`\r\n> ${command}\r\n`);
-        }
-
-        const response = await this.readLine(this.currentSubReader);
-        if (response.isFailure()) {
-          reject(
-            Failure.error("Failed to read response.", {
-              cause: response.error,
-            })
-          );
-          return;
-        }
-        if (!response.value.startsWith("+")) {
-          reject(Failure.error("Command failed."));
-          return;
-        }
-
-        resolve(response);
-      } catch (error) {
-        reject(
-          Failure.error("Error excepted while sending.", { cause: error })
-        );
-      } finally {
-        this.currentSubReader.releaseLock();
-        writer.releaseLock();
+      const request = await this.write(writer, chunk);
+      if (request.isFailure()) {
+        reject(request);
+        return;
       }
+
+      const response = await this.readLine(this.currentSubReader);
+      if (response.isFailure()) {
+        reject(response);
+        return;
+      }
+      if (!response.value.startsWith("+")) {
+        reject(Failure.error("Failed to enter write mode."));
+        return;
+      }
+
+      resovle(response);
+
+      this.currentSubReader.releaseLock();
+      writer.releaseLock();
     });
 
-    this.jobQueue.push(send);
+    this.jobQueue.push({ job: send, description: "send data" });
     return await send;
-  }
-
-  async writeCode(binary: Uint8Array): Promise<Result<null, Error>> {
-    if (!this.port) {
-      return Failure.error("No port.");
-    }
-    if (!this.writeMode) {
-      return Failure.error("Not write mode now.");
-    }
-
-    await this.completeJobs();
-
-    const write = new Promise<Result<null, Error>>(async (resolve, reject) => {
-      const clearRes = await this.sendCommand("clear");
-      if (clearRes.isFailure()) {
-        reject(clearRes);
-        return;
-      }
-
-      const writeSizeRes = await this.sendCommand(`write ${binary.byteLength}`);
-      if (writeSizeRes.isFailure()) {
-        reject(writeSizeRes);
-        return;
-      }
-
-      const writeRes = await this.sendCommand(binary, { verbose: false });
-      if (writeRes.isFailure()) {
-        reject(writeRes);
-        return;
-      }
-
-      resolve(Success.value(null));
-    });
-
-    this.jobQueue.push(write);
-    return await write;
-  }
-
-  setTarget(target: Target) {
-    this.target = target;
   }
 
   private async completeJobs() {
     for (const job of this.jobQueue) {
       try {
-        const res = await job;
-        console.log(res);
+        this.log("Job await:", `"${job.description}"`);
+        const res = await job.job;
+        this.log("Job succeeded", res);
       } catch (error) {
-        console.error(error);
+        this.log("Job failed", error);
       }
     }
     this.jobQueue = [];
   }
 
   private async open(): Promise<Result<null, Error>> {
+    if (!this.port) {
+      return Failure.error("No port.");
+    }
     if (!this.target) {
       return Failure.error("No target selected.");
     }
 
     try {
-      await this.port!.open({ baudRate: baudRates[this.target] });
+      await this.port.open({ baudRate: baudRates[this.target] });
       return Success.value(null);
     } catch (error) {
-      return Failure.error("Cannot open serial port.", { cause: error });
+      return Failure.error("Failed to open serial port.", { cause: error });
     }
   }
 
   private async close(): Promise<Result<null, Error>> {
+    if (!this.port) {
+      return Failure.error("No port.");
+    }
+
     try {
-      await this.port!.close();
+      await this.port.close();
       return Success.value(null);
     } catch (error) {
-      return Failure.error("Cannot close serial port.", { cause: error });
+      return Failure.error("Failed to close serial port.", { cause: error });
     }
   }
 
@@ -287,10 +279,9 @@ export class MrubyWriterConnector {
   private handleText(text: string): Success<{ event: Event | null }> {
     const last_text = this.buffer.pop() ?? "";
     const texts = (last_text + text).split("\r\n");
-    const event = this.detectEvent(texts).value.event;
+    const event = this.detectEvent(texts.join()).value.event;
     this.buffer.push(...texts);
-    this.logger(text);
-    this.onListen?.(text, this.buffer);
+    this.onListen?.(this.buffer);
     return Success.value({ event });
   }
 
@@ -298,7 +289,7 @@ export class MrubyWriterConnector {
     event: Event | null
   ): Promise<Result<null, Error> | null> {
     if (event === "AttemptToEnterWriteMode") {
-      return this.onEnterWriteMode();
+      return this.onAttemptEnterWriteMode();
     }
     if (event === "SuccessToExitWriteMode") {
       return this.onExitWriteMode();
@@ -306,8 +297,7 @@ export class MrubyWriterConnector {
     return null;
   }
 
-  private detectEvent(texts: string[]): Success<{ event: Event | null }> {
-    const text = texts.join();
+  private detectEvent(text: string): Success<{ event: Event | null }> {
     if (
       text.includes("mrubyc-esp32: Please push Enter key x 2 to mrbwite mode")
     ) {
@@ -316,13 +306,11 @@ export class MrubyWriterConnector {
     if (text.includes("mrubyc-esp32: End mrbwrite mode")) {
       return Success.value({ event: "SuccessToExitWriteMode" });
     }
-    if (text.includes("+OK writting to slave.mrbc")) {
-      return Success.value({ event: "AttemptToWriteCode" });
-    }
+
     return Success.value({ event: null });
   }
 
-  private async onEnterWriteMode(): Promise<Result<null, Error>> {
+  private async onAttemptEnterWriteMode(): Promise<Result<null, Error>> {
     if (!this.port) {
       return Failure.error("No port.");
     }
@@ -337,53 +325,24 @@ export class MrubyWriterConnector {
     }
 
     const enter = new Promise<Result<null, Error>>(async (resolve, reject) => {
-      const readerRes = this.getSubReader();
-      const writerRes = this.getWriter();
-      if (readerRes.isFailure()) {
-        reject(readerRes);
+      const response = await this.sendData(this.encoder.encode("\r\n\r\n"));
+      if (response.isFailure()) {
+        reject(response);
         return;
       }
-      if (writerRes.isFailure()) {
-        reject(writerRes);
+      if (!response.value.includes("+OK mruby/c")) {
+        reject(Failure.error("Cannot enter write mode"));
         return;
       }
 
-      const reader = readerRes.value;
-      const writer = writerRes.value;
-      try {
-        await writer.ready;
-        await writer.write(this.encoder.encode("\r\n\r\n"));
-        const response = await this.readLine(reader);
-        if (response.isFailure()) {
-          reject(
-            Failure.error("Cannot enter write mode", {
-              cause: response.error,
-            })
-          );
-          return;
-        }
-        if (!response.value.includes("+OK mruby/c")) {
-          reject(Failure.error("Cannot enter write mode"));
-          return;
-        }
-
-        this.writeMode = true;
-        resolve(Success.value(null));
-      } catch (error) {
-        this.writeMode = false;
-        reject(
-          Failure.error(
-            "Error excepted while attempting to enter write mode.",
-            { cause: error }
-          )
-        );
-      } finally {
-        reader.releaseLock();
-        writer.releaseLock();
-      }
+      this.writeMode = true;
+      resolve(Success.value(null));
     });
 
-    this.jobQueue.push(enter);
+    this.jobQueue.push({
+      job: enter,
+      description: "attempt to enter write mode",
+    });
     return await enter;
   }
 
@@ -405,21 +364,32 @@ export class MrubyWriterConnector {
     }
   }
 
+  private async write(
+    writer: Writer,
+    chunk: Uint8Array
+  ): Promise<Result<null, Error>> {
+    try {
+      await writer.ready;
+      await writer.write(chunk);
+      this.log("Writed", { chunk });
+
+      return Success.value(null);
+    } catch (error) {
+      return Failure.error("Error excepted while writing.", { cause: error });
+    }
+  }
+
   private async readLine(reader: Reader): Promise<Result<string, Error>> {
     let line = "";
-    try {
-      while (true) {
-        const res = await this.read(reader);
-        if (res.isFailure()) return res;
+    while (true) {
+      const res = await this.read(reader);
+      if (res.isFailure()) return res;
 
-        line += res.value;
+      line += res.value;
 
-        if (line.endsWith("\r\n")) {
-          return Success.value(line);
-        }
+      if (line.endsWith("\r\n")) {
+        return Success.value(line);
       }
-    } catch (error) {
-      return Failure.error("Error excepted while reading.", { cause: error });
     }
   }
 }
