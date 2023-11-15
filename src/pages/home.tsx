@@ -218,7 +218,6 @@ const Log = (props: { log: string[] }) => {
       const current = scrollRef.current;
       if (!current) return;
 
-      console.log("scrollend");
       const currentScroll = current.clientHeight + current.scrollTop;
       setAutoScroll(currentScroll == current.scrollHeight);
     };

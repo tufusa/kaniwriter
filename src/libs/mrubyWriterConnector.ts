@@ -197,7 +197,6 @@ export class MrubyWriterConnector {
         reject(writeSizeRes);
         return;
       }
-      console.log({ aaaa: writeSizeRes });
 
       const writeRes = await this.sendCommand(binary, { verbose: false });
       if (writeRes.isFailure()) {
@@ -259,7 +258,6 @@ export class MrubyWriterConnector {
     }
 
     try {
-      console.log("get reader");
       this.currentSubReader?.releaseLock();
       return Success.value(this.subReadable.getReader());
     } catch (error) {
@@ -321,7 +319,6 @@ export class MrubyWriterConnector {
   }
 
   private async onEnterWriteMode(): Promise<Result<null, Error>> {
-    console.log("enter");
     if (!this.port) {
       return Failure.error("No port.");
     }
@@ -334,10 +331,8 @@ export class MrubyWriterConnector {
     if (!this.port.writable) {
       return Failure.error("Cannot write serial port.");
     }
-    console.log("try");
 
     const enter = new Promise<Result<null, Error>>(async (resolve, reject) => {
-      console.log("enter awaited!");
       const readerRes = this.getSubReader();
       const writerRes = this.getWriter();
       if (readerRes.isFailure()) {
@@ -351,12 +346,10 @@ export class MrubyWriterConnector {
 
       const reader = readerRes.value;
       const writer = writerRes.value;
-      console.log("ready");
       try {
         await writer.ready;
         await writer.write(this.encoder.encode("\r\n\r\n"));
         const response = await this.readLine(reader);
-        console.log(response);
         if (response.isFailure()) {
           reject(
             Failure.error("Cannot enter write mode", {
@@ -412,12 +405,10 @@ export class MrubyWriterConnector {
     let line = "";
     try {
       while (true) {
-        console.log({ lb: line });
         const res = await this.read(reader);
         if (res.isFailure()) return res;
 
         line += res.value;
-        console.log({ line });
 
         if (line.endsWith("\r\n")) {
           return Success.value(line);
