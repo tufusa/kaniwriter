@@ -17,6 +17,7 @@ import ESP32 from "/ESP32.png";
 import { Flag, Usb } from "@mui/icons-material";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import { MrubyWriterConnector, Target } from "../libs/mrubyWriterConnector";
+import { isTarget } from "../libs/utility";
 
 const targets: Array<{ title: Target; image: string }> = [
   {
@@ -31,7 +32,10 @@ const targets: Array<{ title: Target; image: string }> = [
 
 export const Home = () => {
   const [step, setStep] = useState<number>(0);
-  const [target, setTarget] = useState<Target>("RBoard");
+  const targetItem = localStorage.getItem("target");
+  const [target, setTarget] = useState<Target>(
+    isTarget(targetItem) ? targetItem : "RBoard"
+  );
   const [command, setCommand] = useState("");
   const [log, setLog] = useState<string[]>([]);
   const [connector] = useState<MrubyWriterConnector>(
@@ -51,6 +55,14 @@ export const Home = () => {
         const { value } = await res.body?.getReader().read();
         setCode(value);
       });
+    })();
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      const ports = await navigator.serial.getPorts();
+      console.log(ports);
+      console.log(ports[0].getInfo());
     })();
   }, []);
 
@@ -163,6 +175,7 @@ export const Home = () => {
                   onChange={() => {
                     setTarget(value.title);
                     connector.setTarget(value.title);
+                    localStorage.setItem("target", value.title);
                     if (step === 0) setStep(1);
                   }}
                 />
@@ -235,9 +248,8 @@ const Log = (props: { log: string[] }) => {
       setAutoScroll(Math.abs(currentScroll - current.scrollHeight) < 1);
     };
 
-    scrollRef.current?.addEventListener("scrollend", onScrollEnd);
-    return () =>
-      scrollRef.current?.removeEventListener("scrollend", onScrollEnd);
+    scrollRef.current?.addEventListener("scroll", onScrollEnd);
+    return () => scrollRef.current?.removeEventListener("scroll", onScrollEnd);
   }, []);
 
   return (

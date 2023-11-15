@@ -1,7 +1,8 @@
 import { WritableStreamDefaultWriter } from "stream/web";
 import { Result, Success, Failure } from "./result";
 
-export type Target = "ESP32" | "RBoard";
+export const targets = ["ESP32", "RBoard"] as const;
+export type Target = (typeof targets)[number];
 
 type Logger = (message?: any, ...params: any[]) => void;
 type Listener = (buffer: string[]) => void;
@@ -26,14 +27,20 @@ export class MrubyWriterConnector {
   private decoder: TextDecoder;
   private buffer: string[];
   private target: Target | undefined;
-
   private currentSubReader: Reader | undefined;
   private jobQueue: Job[];
+  readonly useAnsi: boolean;
 
-  constructor(config: { target?: Target; log: Logger; onListen?: Listener }) {
+  constructor(config: {
+    target?: Target;
+    log: Logger;
+    onListen?: Listener;
+    useAnsi?: boolean;
+  }) {
     this.target = config.target;
     this.log = config.log;
     this.onListen = config.onListen;
+    this.useAnsi = config.useAnsi ?? false;
     this.buffer = [];
     this.writeMode = false;
     this.encoder = new TextEncoder();
@@ -47,9 +54,13 @@ export class MrubyWriterConnector {
 
   async connect(port: () => Promise<SerialPort>): Promise<Result<null, Error>> {
     try {
+      this.handleText("\r\n\u001b[32m> try to connect...\u001b[0m\r\n");
       this.port = await port();
+
+      this.handleText("\r\n\u001b[32m> connection established\u001b[0m\r\n");
       return Success.value(null);
     } catch (error) {
+      this.handleText("\r\n\u001b[31m> failed to connact.\u001b[0m\r\n");
       return Failure.error("Cannot get serial port.", { cause: error });
     }
   }
