@@ -100,7 +100,7 @@ export class MrubyWriterConnector {
       while (true) {
         this.currentSubReader = subReadable.getReader();
         await this.read(this.currentSubReader);
-        await this.executeJobs();
+        await this.completeJobs();
         this.currentSubReader.releaseLock();
       }
     } catch (error) {
@@ -121,6 +121,8 @@ export class MrubyWriterConnector {
     if (!this.writeMode) {
       return Failure.error("Not write mode now.");
     }
+
+    await this.completeJobs();
 
     const send = new Promise<Result<string, Error>>(async (resolve, reject) => {
       const readerRes = this.getSubReader();
@@ -185,6 +187,8 @@ export class MrubyWriterConnector {
       return Failure.error("Not write mode now.");
     }
 
+    await this.completeJobs();
+
     const write = new Promise<Result<null, Error>>(async (resolve, reject) => {
       const clearRes = await this.sendCommand("clear");
       if (clearRes.isFailure()) {
@@ -215,13 +219,13 @@ export class MrubyWriterConnector {
     this.target = target;
   }
 
-  private async executeJobs() {
+  private async completeJobs() {
     for (const job of this.jobQueue) {
       try {
         const res = await job;
         console.log(res);
       } catch (error) {
-        console.log(error);
+        console.error(error);
       }
     }
     this.jobQueue = [];
