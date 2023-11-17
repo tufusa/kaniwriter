@@ -53,9 +53,20 @@ export class MrubyWriterConnector {
   }
 
   async connect(port: () => Promise<SerialPort>): Promise<Result<null, Error>> {
+    if (this.port) {
+      return Failure.error("Already connected.");
+    }
+
     try {
       this.handleText("\r\n\u001b[32m> try to connect...\u001b[0m\r\n");
       this.port = await port();
+      const res = await this.open();
+      if (res.isFailure()) {
+        this.handleText(
+          "\r\n\u001b[31m> failed to open serial port.\u001b[0m\r\n"
+        );
+        return Failure.error("Failed to open serial port.");
+      }
 
       this.handleText("\r\n\u001b[32m> connection established\u001b[0m\r\n");
       return Success.value(null);
@@ -68,11 +79,6 @@ export class MrubyWriterConnector {
   async startListen(): Promise<Result<null, Error>> {
     if (!this.port) {
       return Failure.error("No port.");
-    }
-
-    const res = await this.open();
-    if (res.isFailure()) {
-      return res;
     }
     if (!this.port.readable) {
       return Failure.error("Cannot read serial port.");
