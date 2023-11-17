@@ -43,6 +43,7 @@ export const Home = () => {
       target,
       log: (message, params) => console.log(message, params),
       onListen: (buffer) => setLog([...buffer]),
+      useAnsi: true,
     })
   );
   const [code, setCode] = useState<Uint8Array>();
@@ -55,14 +56,6 @@ export const Home = () => {
         const { value } = await res.body?.getReader().read();
         setCode(value);
       });
-    })();
-  }, []);
-
-  useEffect(() => {
-    (async () => {
-      const ports = await navigator.serial.getPorts();
-      console.log(ports);
-      console.log(ports[0].getInfo());
     })();
   }, []);
 
