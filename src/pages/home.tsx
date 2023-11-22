@@ -29,8 +29,8 @@ import { MrubyWriterConnector, Target } from "libs/mrubyWriterConnector";
 import { isTarget } from "libs/utility";
 import { useQuery } from "hooks/useQuery";
 import { compiler } from "libs/axios";
-import RBoard from "/Rboard.png";
-import ESP32 from "/ESP32.png";
+import RBoard from "/images/Rboard.png";
+import ESP32 from "/images/ESP32.png";
 import "css/home.css";
 
 const targets = [
