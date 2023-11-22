@@ -66,6 +66,7 @@ export class MrubyWriterConnector {
       this.port = await port();
       const res = await this.open();
       if (res.isFailure()) {
+        this.port = undefined;
         this.handleText(
           "\r\n\u001b[31m> failed to open serial port.\u001b[0m\r\n"
         );
@@ -75,6 +76,7 @@ export class MrubyWriterConnector {
       this.handleText("\r\n\u001b[32m> connection established\u001b[0m\r\n");
       return Success.value(null);
     } catch (error) {
+      this.port = undefined;
       this.handleText("\r\n\u001b[31m> failed to connact.\u001b[0m\r\n");
       return Failure.error("Cannot get serial port.", { cause: error });
     }
