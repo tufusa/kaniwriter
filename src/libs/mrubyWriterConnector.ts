@@ -15,7 +15,7 @@ type Job = { job: Promise<any>; description: string };
 const baudRates: Record<Target, number> = {
   ESP32: 115200,
   RBoard: 19200,
-};
+} as const;
 
 export class MrubyWriterConnector {
   private port: SerialPort | undefined;
