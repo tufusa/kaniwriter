@@ -24,7 +24,8 @@
       "components/*": ["src/components/*"],
       "css/*": ["src/css/*"],
       "pages/*": ["src/pages/*"],
-      "routes/*": ["src/routes/*"]
+      "routes/*": ["src/routes/*"],
+      "libs/*": ["src/libs/*"]
     }
   },
   "include": ["src"],
