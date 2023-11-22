@@ -1,4 +1,4 @@
-import { AppBar, Box, Button, Link, Toolbar, Typography } from "@mui/material";
+import { AppBar, Box, Link, Toolbar } from "@mui/material";
 import icon from "/logo.png";
 import "css/header.css";
 
