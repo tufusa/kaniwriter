@@ -368,7 +368,7 @@ const Log = (props: { log: string[] }) => {
     if (!autoScroll) return;
 
     scrollRef.current?.scroll({
-      top: scrollRef.current.scrollHeight,
+      top: scrollRef.current.scrollHeight + 100,
     });
   });
 
