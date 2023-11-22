@@ -22,7 +22,7 @@ export class MrubyWriterConnector {
   private log: Logger;
   private onListen: Listener | undefined;
   private subReadable: ReadableStream<Uint8Array> | undefined;
-  private writeMode: Boolean;
+  private _writeMode: boolean;
   private encoder: TextEncoder;
   private decoder: TextDecoder;
   private buffer: string[];
@@ -42,10 +42,14 @@ export class MrubyWriterConnector {
     this.onListen = config.onListen;
     this.useAnsi = config.useAnsi ?? false;
     this.buffer = [];
-    this.writeMode = false;
+    this._writeMode = false;
     this.encoder = new TextEncoder();
     this.decoder = new TextDecoder();
     this.jobQueue = [];
+  }
+
+  public get writeMode(): boolean {
+    return this._writeMode;
   }
 
   setTarget(target: Target) {
@@ -132,7 +136,7 @@ export class MrubyWriterConnector {
     if (!this.port) {
       return Failure.error("No port.");
     }
-    if (!this.writeMode) {
+    if (!this._writeMode) {
       return Failure.error("Not write mode now.");
     }
 
@@ -151,7 +155,7 @@ export class MrubyWriterConnector {
     if (!this.port) {
       return Failure.error("No port.");
     }
-    if (!this.writeMode) {
+    if (!this._writeMode) {
       return Failure.error("Not write mode now.");
     }
 
@@ -331,7 +335,7 @@ export class MrubyWriterConnector {
     if (!this.port) {
       return Failure.error("No port.");
     }
-    if (this.writeMode) {
+    if (this._writeMode) {
       return Failure.error("Already write mode.");
     }
     if (!this.subReadable) {
@@ -352,7 +356,7 @@ export class MrubyWriterConnector {
         return;
       }
 
-      this.writeMode = true;
+      this._writeMode = true;
       resolve(Success.value(null));
     });
 
@@ -364,7 +368,7 @@ export class MrubyWriterConnector {
   }
 
   private async onExitWriteMode(): Promise<Success<null>> {
-    this.writeMode = false;
+    this._writeMode = false;
     return Success.value(null);
   }
 
