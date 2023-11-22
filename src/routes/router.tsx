@@ -11,5 +11,8 @@ export const router = createBrowserRouter(
     <Route path="/" element={<Layout />}>
       <Route index element={<Home />} />
     </Route>
-  )
+  ),
+  {
+    basename: import.meta.env.VITE_BASE_URL,
+  }
 );
