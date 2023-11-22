@@ -27,7 +27,7 @@ import Base64 from "base64-js";
 
 import { MrubyWriterConnector, Target } from "libs/mrubyWriterConnector";
 import { isTarget } from "libs/utility";
-import { useQuery } from "src/hooks/useQuery";
+import { useQuery } from "hooks/useQuery";
 import { compiler } from "libs/axios";
 import RBoard from "/Rboard.png";
 import ESP32 from "/ESP32.png";
