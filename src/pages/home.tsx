@@ -280,7 +280,10 @@ export const Home = () => {
           接続
           <UsbIcon />
         </Button>
-        <Button onClick={writeCode}>
+        <Button
+          onClick={writeCode}
+          disabled={compileStatus.status !== "success" || !connector.writeMode}
+        >
           書き込み
           <FlagIcon />
         </Button>
