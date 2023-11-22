@@ -313,52 +313,57 @@ export const Home = () => {
   );
 };
 
-const CompileStatusCard = (props: { status: CompileStatus }) => (
-  <Sheet
-    variant="outlined"
-    color="neutral"
-    sx={{
-      m: "1rem auto 0 auto",
-      p: "0.5rem 1.5rem",
-      width: "15rem",
-      borderRadius: "sm",
-      display: "flex",
-      flexWrap: "wrap",
-      flexDirection: "row",
-      justifyContent: "center",
-      alignItems: "center",
-      fontFamily: "'M PLUS Rounded 1c', sans-serif",
-    }}
-  >
-    {props.status.status === "idle" && (
-      <>
-        コンパイル待機中
-        <CircularProgress size="1.5rem" sx={{ ml: "1rem" }} />
-      </>
-    )}
-    {props.status.status === "compile" && (
-      <>
-        コンパイル中
-        <CircularProgress size="1.5rem" sx={{ ml: "1rem" }} />
-      </>
-    )}
-    {props.status.status === "success" && (
-      <>
-        コンパイル完了
-        <CheckIcon color="success" />
-      </>
-    )}
-    {props.status.status === "error" && (
-      <>
-        コンパイル失敗
-        <ErrorOutlineIcon color="error" />
-        <Box width="100%">
-          <code>{props.status.error}</code>
-        </Box>
-      </>
-    )}
-  </Sheet>
-);
+const CompileStatusCard = (props: { status: CompileStatus }) => {
+  const { status, error } = props.status;
+
+  return (
+    <Sheet
+      variant="outlined"
+      color="neutral"
+      sx={{
+        m: "1rem auto 0 auto",
+        p: "0.5rem 1.5rem",
+        width: "15rem",
+        borderRadius: "sm",
+        borderColor: status == "error" ? "red" : "lightgrey",
+        display: "flex",
+        flexWrap: "wrap",
+        flexDirection: "row",
+        justifyContent: "center",
+        alignItems: "center",
+        fontFamily: "'M PLUS Rounded 1c', sans-serif",
+      }}
+    >
+      {status === "idle" && (
+        <>
+          コンパイル待機中
+          <CircularProgress size="1.5rem" sx={{ ml: "1rem" }} />
+        </>
+      )}
+      {status === "compile" && (
+        <>
+          コンパイル中
+          <CircularProgress size="1.5rem" sx={{ ml: "1rem" }} />
+        </>
+      )}
+      {status === "success" && (
+        <>
+          コンパイル完了
+          <CheckIcon color="success" />
+        </>
+      )}
+      {status === "error" && (
+        <>
+          コンパイル失敗
+          <ErrorOutlineIcon color="error" />
+          <Box width="100%">
+            <code>{error}</code>
+          </Box>
+        </>
+      )}
+    </Sheet>
+  );
+};
 
 const Log = (props: { log: string[] }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
