@@ -120,7 +120,7 @@ export class MrubyWriterConnector {
 
       mainReadable.pipeThrough(decodeStream).pipeTo(logStream);
 
-      while (true) {
+      while (this.port.readable) {
         this.currentSubReader = subReadable.getReader();
         await this.read(this.currentSubReader);
         await this.completeJobs();
@@ -132,6 +132,8 @@ export class MrubyWriterConnector {
       this.currentSubReader?.releaseLock();
       await this.close();
     }
+
+    return Failure.error("Reader is canceled.");
   }
 
   async sendCommand(command: string): Promise<Result<string, Error>> {
