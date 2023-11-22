@@ -10,6 +10,7 @@ import {
 } from "@mui/joy";
 import { Input, Typography } from "@mui/material";
 import Ansi from "ansi-to-react";
+import { useQuery } from "src/hooks/useQuery";
 import "css/home.css";
 
 import RBoard from "/RBoard.png";
@@ -31,7 +32,8 @@ const targets: Array<{ title: Target; image: string }> = [
 ];
 
 export const Home = () => {
-  const [step, setStep] = useState<number>(0);
+  const query = useQuery();
+  const id = query.get("id");
   const targetItem = localStorage.getItem("target");
   const [target, setTarget] = useState<Target>(
     isTarget(targetItem) ? targetItem : "RBoard"
