@@ -54,8 +54,8 @@ export const Home = () => {
   const id = query.get("id");
 
   const targetItem = localStorage.getItem("target");
-  const [target, setTarget] = useState<Target>(
-    isTarget(targetItem) ? targetItem : "RBoard"
+  const [target, setTarget] = useState<Target | undefined>(
+    isTarget(targetItem) ? targetItem : undefined
   );
   const autoConnectItem = localStorage.getItem("autoConnect");
   const [autoConnectMode, setAutoConnectMode] = useState<boolean>(
@@ -191,7 +191,20 @@ export const Home = () => {
       <CompileStatusCard status={compileStatus} />
 
       {/* マイコン選択 */}
-      <Box sx={{ display: "flex", gap: 2 }}>
+      <Box
+        sx={{
+          m: "2rem 0",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        {!target && (
+          <Typography variant="body1" color="red">
+            書き込みターゲットを選択してください。
+          </Typography>
+        )}
         <RadioGroup
           aria-label="platform"
           defaultValue="Website"
@@ -199,7 +212,6 @@ export const Home = () => {
           name="platform"
           sx={{
             flexDirection: "row",
-            margin: "2rem auto",
             gap: 2,
             [`& .${radioClasses.checked}`]: {
               [`& .${radioClasses.action}`]: {
@@ -276,7 +288,7 @@ export const Home = () => {
           margin: "1rem",
         }}
       >
-        <Button onClick={connect}>
+        <Button onClick={connect} disabled={!target}>
           接続
           <UsbIcon />
         </Button>
