@@ -168,7 +168,7 @@ export const Home = () => {
 
   const writeCode = async () => {
     if (!code) return;
-    const res = await connector.writeCode(code);
+    const res = await connector.writeCode(code, { execute: true });
     console.log(res);
     if (res.isFailure()) {
       alert(
