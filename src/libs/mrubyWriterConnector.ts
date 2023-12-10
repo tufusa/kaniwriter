@@ -214,7 +214,9 @@ export class MrubyWriterConnector {
         return;
       }
       if (!response.value.startsWith("+")) {
-        reject(Failure.error("Failed to enter write mode."));
+        reject(
+          Failure.error("Failed to enter write mode.", { cause: response })
+        );
         return;
       }
 
