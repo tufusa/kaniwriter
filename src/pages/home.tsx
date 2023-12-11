@@ -179,15 +179,6 @@ export const Home = () => {
 
   return (
     <Box id="home">
-      <Typography
-        variant="h4"
-        component="div"
-        color="black"
-        fontFamily={"'M PLUS Rounded 1c', sans-serif"}
-      >
-        書き込みツール
-      </Typography>
-
       <CompileStatusCard status={compileStatus} />
 
       {/* マイコン選択 */}
@@ -243,9 +234,10 @@ export const Home = () => {
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                gap: 1.5,
+                gap: 1,
                 p: 2,
-                minWidth: 120,
+                minWidth: 100,
+                maxHeight: 140,
               }}
             >
               <Radio
@@ -269,7 +261,7 @@ export const Home = () => {
                 alt={value.title}
                 style={{
                   aspectRatio: "1/1",
-                  width: "10rem",
+                  width: "6rem",
                   margin: "0 auto",
                 }}
               />
