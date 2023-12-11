@@ -416,17 +416,19 @@ const Log = (props: { log: string[] }) => {
         ))}
       </Sheet>
       <Box display="flex" justifyContent="right" width="100%">
-        <Button
-          variant="plain"
-          color={autoScroll ? "primary" : "neutral"}
-          onClick={() => setAutoScroll(() => !autoScroll)}
-          sx={{
-            ":hover": { background: "none" },
-            ":focus": { outline: "none" },
-          }}
-        >
-          Auto scroll
-        </Button>
+        <FormControlLabel
+          control={
+            <Checkbox
+              onChange={(ev) => {
+                const checked = ev.currentTarget.checked;
+                setAutoScroll(checked);
+              }}
+              checked={autoScroll}
+            />
+          }
+          label="Auto scroll"
+          labelPlacement="start"
+        />
       </Box>
     </Sheet>
   );
