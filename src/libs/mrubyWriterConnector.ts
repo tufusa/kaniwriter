@@ -395,9 +395,25 @@ export class MrubyWriterConnector {
     writer: Writer,
     chunk: Uint8Array
   ): Promise<Result<null, Error>> {
+    const divisionSize = 1024;
+    const waitTimeMs = 500;
+    const sleep = (ms: number) =>
+      new Promise((resolve) => setTimeout(resolve, ms));
+
+    const chunks = new Array(Math.ceil(chunk.length / divisionSize))
+      .fill(null)
+      .map((_, idx) =>
+        chunk.subarray(idx * divisionSize, (idx + 1) * divisionSize)
+      );
+
     try {
-      await writer.ready;
-      await writer.write(chunk);
+      for (const idx of [...chunks.map((_, i) => i)]) {
+        await writer.ready;
+        await writer.write(chunks[idx]);
+        if (idx == chunks.length - 1) break;
+
+        await sleep(waitTimeMs);
+      }
       this.log("Writed", { chunk });
 
       return Success.value(null);
