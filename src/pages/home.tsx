@@ -377,42 +377,51 @@ const Log = (props: { log: string[] }) => {
     if (!autoScroll) return;
 
     scrollRef.current?.scroll({
-      top: scrollRef.current.scrollHeight + 100,
+      top: scrollRef.current.scrollHeight,
     });
   });
 
-  useEffect(() => {
-    const onScrollEnd = () => {
-      const current = scrollRef.current;
-      if (!current) return;
-
-      const currentScroll = current.clientHeight + current.scrollTop;
-      setAutoScroll(Math.abs(currentScroll - current.scrollHeight) < 1);
-    };
-
-    scrollRef.current?.addEventListener("scroll", onScrollEnd);
-    return () => scrollRef.current?.removeEventListener("scroll", onScrollEnd);
-  }, []);
-
   return (
     <Sheet
-      variant="outlined"
-      ref={scrollRef}
       sx={{
         m: "0 auto",
-        px: "0.5rem",
         width: "85%",
-        height: "20rem",
-        textAlign: "left",
-        overflowY: "auto",
-        resize: "vertical",
       }}
     >
-      {props.log.map((text, index) => (
-        <div key={`log-${index}`}>
-          <Ansi>{text}</Ansi>
-        </div>
-      ))}
+      <Sheet
+        variant="outlined"
+        ref={scrollRef}
+        sx={{
+          px: "0.5rem",
+          boxSizing: "border-box",
+          width: "100%",
+          height: "20rem",
+          textAlign: "left",
+          overflowY: "auto",
+          resize: "vertical",
+        }}
+      >
+        {props.log.map((text, index) => (
+          <div key={`log-${index}`}>
+            <Ansi>{text}</Ansi>
+          </div>
+        ))}
+      </Sheet>
+      <Box display="flex" justifyContent="right" width="100%">
+        <FormControlLabel
+          control={
+            <Checkbox
+              onChange={(ev) => {
+                const checked = ev.currentTarget.checked;
+                setAutoScroll(checked);
+              }}
+              checked={autoScroll}
+            />
+          }
+          label="Auto scroll"
+          labelPlacement="start"
+        />
+      </Box>
     </Sheet>
   );
 };
