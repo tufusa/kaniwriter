@@ -31,7 +31,6 @@ import { useQuery } from "hooks/useQuery";
 import { compiler } from "libs/axios";
 import RBoard from "/images/Rboard.png";
 import ESP32 from "/images/ESP32.png";
-import "css/home.css";
 
 const targets = [
   {
@@ -178,141 +177,172 @@ export const Home = () => {
   };
 
   return (
-    <Box id="home">
-      <CompileStatusCard status={compileStatus} />
-
-      {/* マイコン選択 */}
+    <Box
+      sx={{
+        display: "flex",
+        width: "100%",
+        minWidth: "150px",
+        maxWidth: "1000px",
+        flexDirection: "row",
+        flexGrow: "1",
+        gap: "1rem",
+      }}
+    >
       <Box
         sx={{
-          m: "2rem 0",
+          width: "15rem",
+          ml: "2rem",
           display: "flex",
           flexDirection: "column",
-          justifyContent: "center",
           alignItems: "center",
+          gap: "2rem",
         }}
       >
-        {!target && (
-          <Typography variant="body1" color="red">
-            書き込みターゲットを選択してください。
-          </Typography>
-        )}
-        <RadioGroup
-          aria-label="platform"
-          defaultValue="Website"
-          overlay
-          name="platform"
+        <CompileStatusCard status={compileStatus} />
+
+        {/* マイコン選択 */}
+        <Box
           sx={{
-            flexDirection: "row",
-            gap: 2,
-            [`& .${radioClasses.checked}`]: {
-              [`& .${radioClasses.action}`]: {
-                inset: -1,
-                border: "3px solid",
-                borderColor: "primary.500",
-              },
-            },
-            [`& .${radioClasses.radio}`]: {
-              display: "contents",
-              "& > svg": {
-                zIndex: 2,
-                position: "absolute",
-                top: "-8px",
-                right: "-8px",
-                bgcolor: "background.surface",
-                borderRadius: "50%",
-              },
-            },
+            width: "100%",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
           }}
         >
-          {targets.map((value, index) => (
-            <Sheet
-              key={index}
-              variant="outlined"
-              sx={{
-                borderRadius: "md",
-                boxShadow: "sm",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: 1,
-                p: 2,
-                minWidth: 100,
-                maxHeight: 140,
+          {!target && (
+            <Typography variant="body1" color="red">
+              書き込みターゲットを選択してください。
+            </Typography>
+          )}
+          <RadioGroup
+            aria-label="platform"
+            defaultValue="Website"
+            overlay
+            name="platform"
+            sx={{
+              width: "100%",
+              flexDirection: "column",
+              gap: 2,
+              [`& .${radioClasses.checked}`]: {
+                [`& .${radioClasses.action}`]: {
+                  inset: -1,
+                  border: "3px solid",
+                  borderColor: "primary.500",
+                },
+              },
+              [`& .${radioClasses.radio}`]: {
+                display: "contents",
+                "& > svg": {
+                  zIndex: 2,
+                  position: "absolute",
+                  top: "-8px",
+                  right: "-8px",
+                  bgcolor: "background.surface",
+                  borderRadius: "50%",
+                },
+              },
+            }}
+          >
+            {targets.map((value, index) => (
+              <Sheet
+                key={index}
+                variant="outlined"
+                sx={{
+                  borderRadius: "md",
+                  boxShadow: "sm",
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 1,
+                  p: 2,
+                  minWidth: 100,
+                }}
+              >
+                <Radio
+                  id={value.title}
+                  value={value.title}
+                  checkedIcon={<CheckCircleRoundedIcon />}
+                  checked={target === value.title}
+                  onChange={() => {
+                    setTarget(value.title);
+                    connector.setTarget(value.title);
+                    localStorage.setItem("target", value.title);
+                  }}
+                />
+                <FormLabel htmlFor={value.title}>
+                  <Typography fontFamily={"'M PLUS Rounded 1c', sans-serif"}>
+                    {value.title}
+                  </Typography>
+                </FormLabel>
+                <img
+                  src={value.image}
+                  alt={value.title}
+                  style={{
+                    aspectRatio: "1/1",
+                    width: "6rem",
+                    margin: "0 auto",
+                  }}
+                />
+              </Sheet>
+            ))}
+          </RadioGroup>
+        </Box>
+        {/* マイコン接続 */}
+
+        <Box
+          sx={{
+            width: "100%",
+            display: "flex",
+            gap: "1rem",
+            justifyContent: "center",
+          }}
+        >
+          <Button onClick={connect} disabled={!target}>
+            接続
+            <UsbIcon />
+          </Button>
+          <Button
+            onClick={writeCode}
+            disabled={
+              compileStatus.status !== "success" || !connector.writeMode
+            }
+          >
+            書き込み
+            <FlagIcon />
+          </Button>
+        </Box>
+        <FormControlLabel
+          control={
+            <Checkbox
+              onChange={(ev) => {
+                const checked = ev.currentTarget.checked;
+                setAutoConnectMode(checked);
+                localStorage.setItem("autoConnect", `${checked}`);
+
+                if (checked) window.location.reload();
               }}
-            >
-              <Radio
-                id={value.title}
-                value={value.title}
-                checkedIcon={<CheckCircleRoundedIcon />}
-                checked={target === value.title}
-                onChange={() => {
-                  setTarget(value.title);
-                  connector.setTarget(value.title);
-                  localStorage.setItem("target", value.title);
-                }}
-              />
-              <FormLabel htmlFor={value.title}>
-                <Typography fontFamily={"'M PLUS Rounded 1c', sans-serif"}>
-                  {value.title}
-                </Typography>
-              </FormLabel>
-              <img
-                src={value.image}
-                alt={value.title}
-                style={{
-                  aspectRatio: "1/1",
-                  width: "6rem",
-                  margin: "0 auto",
-                }}
-              />
-            </Sheet>
-          ))}
-        </RadioGroup>
+              checked={autoConnectMode}
+            />
+          }
+          label="自動接続(Experimental)"
+          sx={{ color: "black" }}
+        />
       </Box>
-
-      {/* マイコン接続 */}
-
       <Box
         sx={{
+          width: "50%",
           display: "flex",
-          gap: "1rem",
-          justifyContent: "center",
-          margin: "1rem",
+          flexDirection: "column",
+          flexGrow: "1",
         }}
       >
-        <Button onClick={connect} disabled={!target}>
-          接続
-          <UsbIcon />
-        </Button>
-        <Button
-          onClick={writeCode}
-          disabled={compileStatus.status !== "success" || !connector.writeMode}
-        >
-          書き込み
-          <FlagIcon />
-        </Button>
+        <Log log={log} />
+        <Box>
+          <Input type="text" onChange={(e) => setCommand(e.target.value)} />
+          <Input type="submit" onClick={() => send(command)} value="Send" />
+        </Box>
       </Box>
-
-      <FormControlLabel
-        control={
-          <Checkbox
-            onChange={(ev) => {
-              const checked = ev.currentTarget.checked;
-              setAutoConnectMode(checked);
-              localStorage.setItem("autoConnect", `${checked}`);
-
-              if (checked) window.location.reload();
-            }}
-            checked={autoConnectMode}
-          />
-        }
-        label="Auto connect"
-        sx={{ color: "black" }}
-      />
-
-      <Log log={log} />
-      <Input type="text" onChange={(e) => setCommand(e.target.value)} />
-      <Input type="submit" onClick={() => send(command)} value="Send" />
     </Box>
   );
 };
@@ -325,9 +355,9 @@ const CompileStatusCard = (props: { status: CompileStatus }) => {
       variant="outlined"
       color="neutral"
       sx={{
-        m: "1rem auto 0 auto",
         p: "0.5rem 1.5rem",
-        width: "15rem",
+        width: "100%",
+        boxSizing: "border-box",
         borderRadius: "sm",
         borderColor: status == "error" ? "red" : "lightgrey",
         display: "flex",
@@ -384,8 +414,10 @@ const Log = (props: { log: string[] }) => {
   return (
     <Sheet
       sx={{
-        m: "0 auto",
-        width: "85%",
+        width: "100%",
+        display: "flex",
+        flexDirection: "column",
+        flexGrow: "1",
       }}
     >
       <Sheet
@@ -395,10 +427,11 @@ const Log = (props: { log: string[] }) => {
           px: "0.5rem",
           boxSizing: "border-box",
           width: "100%",
-          height: "20rem",
           textAlign: "left",
+          height: "20rem",
+          minHeight: "200px",
           overflowY: "auto",
-          resize: "vertical",
+          flexGrow: "1",
         }}
       >
         {props.log.map((text, index) => (
@@ -418,7 +451,7 @@ const Log = (props: { log: string[] }) => {
               checked={autoScroll}
             />
           }
-          label="Auto scroll"
+          label="自動スクロール"
           labelPlacement="start"
         />
       </Box>
