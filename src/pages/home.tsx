@@ -185,6 +185,7 @@ export const Home = () => {
         maxWidth: "1000px",
         flexDirection: "row",
         flexGrow: "1",
+        gap: "1rem",
       }}
     >
       <Box
@@ -413,8 +414,7 @@ const Log = (props: { log: string[] }) => {
   return (
     <Sheet
       sx={{
-        m: "0 auto",
-        minWidth: "90%",
+        width: "100%",
         display: "flex",
         flexDirection: "column",
         flexGrow: "1",
