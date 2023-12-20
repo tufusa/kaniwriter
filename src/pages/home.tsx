@@ -183,12 +183,13 @@ export const Home = () => {
         width: "100%",
         minWidth: "150px",
         maxWidth: "1000px",
-        margin: "0 auto",
+        flexDirection: "row",
+        flexGrow: "1",
       }}
     >
       <Box
         sx={{
-          width: "50%",
+          flexGrow: "1",
           flex: "wrap",
         }}
       >
@@ -305,8 +306,6 @@ export const Home = () => {
             <FlagIcon />
           </Button>
         </Box>
-      </Box>
-      <Box sx={{ width: "50%" }}>
         <FormControlLabel
           control={
             <Checkbox
@@ -323,10 +322,20 @@ export const Home = () => {
           label="Auto connect"
           sx={{ color: "black" }}
         />
-
+      </Box>
+      <Box
+        sx={{
+          width: "50%",
+          display: "flex",
+          flexDirection: "column",
+          flexGrow: "1",
+        }}
+      >
         <Log log={log} />
-        <Input type="text" onChange={(e) => setCommand(e.target.value)} />
-        <Input type="submit" onClick={() => send(command)} value="Send" />
+        <Box>
+          <Input type="text" onChange={(e) => setCommand(e.target.value)} />
+          <Input type="submit" onClick={() => send(command)} value="Send" />
+        </Box>
       </Box>
     </Box>
   );
@@ -401,6 +410,9 @@ const Log = (props: { log: string[] }) => {
       sx={{
         m: "0 auto",
         width: "90%",
+        display: "flex",
+        flexDirection: "column",
+        flexGrow: "1",
       }}
     >
       <Sheet
@@ -415,6 +427,7 @@ const Log = (props: { log: string[] }) => {
           minHeight: "200px",
           overflowY: "auto",
           resize: "vertical",
+          flexGrow: "1",
         }}
       >
         {props.log.map((text, index) => (

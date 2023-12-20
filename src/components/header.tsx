@@ -14,7 +14,6 @@ export function Header() {
         padding: 0,
         margin: 0,
         width: "100%",
-        marginBottom: "1.2rem",
       }}
     >
       <Toolbar
@@ -53,7 +52,7 @@ export function Header() {
             書き込みツール
           </Link>
         </Box>
-        <Box sx={{ right: "1rem", m:"0 2rem" }}>
+        <Box sx={{ right: "1rem", m: "0 2rem" }}>
           <Link
             href={import.meta.env.VITE_BASE_URL}
             variant="body1"
