@@ -319,7 +319,7 @@ export const Home = () => {
               checked={autoConnectMode}
             />
           }
-          label="Auto connect"
+          label="自動接続(Experimental)"
           sx={{ color: "black" }}
         />
       </Box>
@@ -447,7 +447,7 @@ const Log = (props: { log: string[] }) => {
               checked={autoScroll}
             />
           }
-          label="Auto scroll"
+          label="自動スクロール"
           labelPlacement="start"
         />
       </Box>
