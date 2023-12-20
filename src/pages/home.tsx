@@ -189,8 +189,12 @@ export const Home = () => {
     >
       <Box
         sx={{
-          flexGrow: "1",
-          flex: "wrap",
+          width: "15rem",
+          ml: "2rem",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: "2rem",
         }}
       >
         <CompileStatusCard status={compileStatus} />
@@ -198,7 +202,7 @@ export const Home = () => {
         {/* マイコン選択 */}
         <Box
           sx={{
-            m: "2rem 0",
+            width: "100%",
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
@@ -216,6 +220,7 @@ export const Home = () => {
             overlay
             name="platform"
             sx={{
+              width: "100%",
               flexDirection: "column",
               gap: 2,
               [`& .${radioClasses.checked}`]: {
@@ -286,10 +291,10 @@ export const Home = () => {
 
         <Box
           sx={{
+            width: "100%",
             display: "flex",
             gap: "1rem",
             justifyContent: "center",
-            margin: "1rem",
           }}
         >
           <Button onClick={connect} disabled={!target}>
@@ -349,9 +354,9 @@ const CompileStatusCard = (props: { status: CompileStatus }) => {
       variant="outlined"
       color="neutral"
       sx={{
-        m: "1rem auto 0 auto",
         p: "0.5rem 1.5rem",
-        width: "15rem",
+        width: "100%",
+        boxSizing: "border-box",
         borderRadius: "sm",
         borderColor: status == "error" ? "red" : "lightgrey",
         display: "flex",
@@ -409,7 +414,7 @@ const Log = (props: { log: string[] }) => {
     <Sheet
       sx={{
         m: "0 auto",
-        width: "90%",
+        minWidth: "90%",
         display: "flex",
         flexDirection: "column",
         flexGrow: "1",

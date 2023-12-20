@@ -5,7 +5,7 @@ import { Box } from "@mui/material";
 export const Layout = () => (
   <Box
     sx={{
-      height: "100vh",
+      minHeight: "100vh",
       display: "flex",
       flexDirection: "column",
       gap: "2rem",
