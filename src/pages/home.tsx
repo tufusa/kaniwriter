@@ -431,7 +431,6 @@ const Log = (props: { log: string[] }) => {
           height: "20rem",
           minHeight: "200px",
           overflowY: "auto",
-          resize: "vertical",
           flexGrow: "1",
         }}
       >
