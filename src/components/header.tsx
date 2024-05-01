@@ -76,7 +76,9 @@ export function Header() {
             参考資料
           </Link>
           <Link
-            href={import.meta.env.VITE_WRITER_GITHUB_URL}
+            href={`https://github.com/${
+              import.meta.env.VITE_WRITER_REPOSITORY_PATH
+            }`}
             target="_blank"
             variant="body1"
             underline="none"
