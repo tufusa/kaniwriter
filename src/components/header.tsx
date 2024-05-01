@@ -1,4 +1,5 @@
 import { AppBar, Box, Link, Toolbar } from "@mui/material";
+import { GitHub } from "@mui/icons-material";
 import icon from "/images/logo.png";
 
 export function Header() {
@@ -52,7 +53,16 @@ export function Header() {
             書き込みツール
           </Link>
         </Box>
-        <Box sx={{ right: "1rem", m: "0 2rem" }}>
+        <Box
+          sx={{
+            height: "100%",
+            right: "1rem",
+            m: "0 2rem",
+            display: "flex",
+            gap: "1rem",
+            alignItems: "center",
+          }}
+        >
           <Link
             href={import.meta.env.VITE_BASE_URL}
             variant="body1"
@@ -60,11 +70,25 @@ export function Header() {
             color="inherit"
             fontFamily="'M PLUS Rounded 1c', sans-serif"
             sx={{
-              margin: "0 1rem",
               ":hover": { color: "inherit" },
             }}
           >
             参考資料
+          </Link>
+          <Link
+            href={`https://github.com/${
+              import.meta.env.VITE_WRITER_REPOSITORY_PATH
+            }`}
+            target="_blank"
+            variant="body1"
+            underline="none"
+            color="inherit"
+            sx={{
+              ":hover": { color: "inherit" },
+              display: "flex",
+            }}
+          >
+            <GitHub fontSize="large" />
           </Link>
         </Box>
       </Toolbar>
