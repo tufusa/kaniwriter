@@ -28,7 +28,6 @@ import Base64 from "base64-js";
 import { MrubyWriterConnector, Target } from "libs/mrubyWriterConnector";
 import { isTarget } from "libs/utility";
 import { useQuery } from "hooks/useQuery";
-import { compiler } from "libs/axios";
 import RBoard from "/images/Rboard.png";
 import ESP32 from "/images/ESP32.png";
 
@@ -80,11 +79,10 @@ export const Home = () => {
     const compile = async () => {
       setCompileStatus({ status: "idle" });
 
-      const code = await compiler
-        .get(`/code/${id}`)
-        .then((res) => res.data as { code: string })
-        .catch(() => undefined);
-      if (!code) {
+      const codeResponse = await fetch(
+        `${import.meta.env.VITE_COMPILER_URL}/code/${id}`
+      );
+      if (!codeResponse.ok) {
         setCompileStatus({
           status: "error",
           error: "No source code found.",
@@ -94,18 +92,26 @@ export const Home = () => {
 
       setCompileStatus({ status: "compile" });
 
-      compiler
-        .post(`/code/${id}/compile`)
-        .then((res) => {
-          const result = res.data as { binary: string; error: string };
-          if (result.error !== "") return;
+      const compileResponse = await fetch(
+        `${import.meta.env.VITE_COMPILER_URL}/code/${id}/compile`,
+        { method: "POST" }
+      );
+      if (!compileResponse.ok) {
+        setCompileStatus({ status: "error", error: "Compile failed." });
+        return;
+      }
 
-          setCode(Base64.toByteArray(result.binary));
-          setCompileStatus({ status: "success" });
-        })
-        .catch(() =>
-          setCompileStatus({ status: "error", error: "Compile failed." })
-        );
+      const compileResult = (await compileResponse.json()) as {
+        binary: string;
+        error: string;
+      };
+      if (compileResult.error !== "") {
+        setCompileStatus({ status: "error", error: "Compile failed." });
+        return;
+      }
+
+      setCode(Base64.toByteArray(compileResult.binary));
+      setCompileStatus({ status: "success" });
     };
 
     compile();
