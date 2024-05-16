@@ -16,7 +16,7 @@ importers:
         version: 11.11.5(@emotion/react@11.11.4(@types/react@18.2.7)(react@18.2.0))(@types/react@18.2.7)(react@18.2.0)
       '@mui/icons-material':
         specifier: ^5.14.15
-        version: 5.14.15(@mui/material@5.13.2(@emotion/react@11.11.4(@types/react@18.2.7)(react@18.2.0))(@emotion/styled@11.11.5(@emotion/react@11.11.4(@types/react@18.2.7)(react@18.2.0))(@types/react@18.2.7)(react@18.2.0))(@types/react@18.2.7)(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(@types/react@18.2.7)(react@18.2.0)
+        version: 5.15.17(@mui/material@5.13.2(@emotion/react@11.11.4(@types/react@18.2.7)(react@18.2.0))(@emotion/styled@11.11.5(@emotion/react@11.11.4(@types/react@18.2.7)(react@18.2.0))(@types/react@18.2.7)(react@18.2.0))(@types/react@18.2.7)(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(@types/react@18.2.7)(react@18.2.0)
       '@mui/joy':
         specifier: 5.0.0-alpha.81
         version: 5.0.0-alpha.81(@emotion/react@11.11.4(@types/react@18.2.7)(react@18.2.0))(@emotion/styled@11.11.5(@emotion/react@11.11.4(@types/react@18.2.7)(react@18.2.0))(@types/react@18.2.7)(react@18.2.0))(@types/react@18.2.7)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
@@ -187,10 +187,6 @@ packages:
 
   '@babel/runtime@7.21.5':
     resolution: {integrity: sha512-8jI69toZqqcsnqGGqwGS4Qb1VwLOEp4hz+CXPywcvjs60u3B4Pom/U/7rm4W8tMOYEB+E9wgD0mW1l3r8qlI9Q==}
-    engines: {node: '>=6.9.0'}
-
-  '@babel/runtime@7.23.2':
-    resolution: {integrity: sha512-mM8eg4yl5D6i3lu2QKPuPH4FArvJ8KhTofbE7jwMUv9KX5mBvwPAqnV3MlyBNqdp9RyRKP6Yck8TrfYrPvX3bg==}
     engines: {node: '>=6.9.0'}
 
   '@babel/runtime@7.24.5':
@@ -463,8 +459,8 @@ packages:
   '@mui/core-downloads-tracker@5.13.2':
     resolution: {integrity: sha512-aOLCXMCySMFL2WmUhnz+DjF84AoFVu8rn35OsL759HXOZMz8zhEwVf5w/xxkWx7DycM2KXDTgAvYW48nTfqTLA==}
 
-  '@mui/icons-material@5.14.15':
-    resolution: {integrity: sha512-Dqu21vN/mVNzebJ+ofnKG+CeJYIhHuDs5+0fMEpdpzRt6UojelzdrEkNv+XkO0e1JMclzeXIRx404FirK/CFRw==}
+  '@mui/icons-material@5.15.17':
+    resolution: {integrity: sha512-xVzl2De7IY36s/keHX45YMiCpsIx3mNv2xwDgtBkRSnZQtVk+Gqufwj1ktUxEyjzEhBl0+PiNJqYC31C+n1n6A==}
     engines: {node: '>=12.0.0'}
     peerDependencies:
       '@mui/material': ^5.0.0
@@ -1585,9 +1581,6 @@ packages:
   regenerator-runtime@0.13.11:
     resolution: {integrity: sha512-kY1AZVr2Ra+t+piVaJ4gxaFaReZVH40AKNo7UCX6W+dEwBo/2oZJzqfuN1qLq1oL45o56cPaTXELwrTh8Fpggg==}
 
-  regenerator-runtime@0.14.0:
-    resolution: {integrity: sha512-srw17NI0TUWHuGa5CFGGmhfNIeja30WMBfbslPNhf6JrqQlLN5gcrvig1oqPxiVaXb0oW0XRKtH6Nngs5lKCIA==}
-
   regenerator-runtime@0.14.1:
     resolution: {integrity: sha512-dYnhHh0nJoMfnkZs6GmmhFknAGRrLznOu5nc9ML+EJxGvrx6H7teuevqVqCuPcPK//3eDrrjQhehXVx9cnkGdw==}
 
@@ -1971,10 +1964,6 @@ snapshots:
     dependencies:
       regenerator-runtime: 0.13.11
 
-  '@babel/runtime@7.23.2':
-    dependencies:
-      regenerator-runtime: 0.14.0
-
   '@babel/runtime@7.24.5':
     dependencies:
       regenerator-runtime: 0.14.1
@@ -2224,9 +2213,9 @@ snapshots:
 
   '@mui/core-downloads-tracker@5.13.2': {}
 
-  '@mui/icons-material@5.14.15(@mui/material@5.13.2(@emotion/react@11.11.4(@types/react@18.2.7)(react@18.2.0))(@emotion/styled@11.11.5(@emotion/react@11.11.4(@types/react@18.2.7)(react@18.2.0))(@types/react@18.2.7)(react@18.2.0))(@types/react@18.2.7)(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(@types/react@18.2.7)(react@18.2.0)':
+  '@mui/icons-material@5.15.17(@mui/material@5.13.2(@emotion/react@11.11.4(@types/react@18.2.7)(react@18.2.0))(@emotion/styled@11.11.5(@emotion/react@11.11.4(@types/react@18.2.7)(react@18.2.0))(@types/react@18.2.7)(react@18.2.0))(@types/react@18.2.7)(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(@types/react@18.2.7)(react@18.2.0)':
     dependencies:
-      '@babel/runtime': 7.23.2
+      '@babel/runtime': 7.24.5
       '@mui/material': 5.13.2(@emotion/react@11.11.4(@types/react@18.2.7)(react@18.2.0))(@emotion/styled@11.11.5(@emotion/react@11.11.4(@types/react@18.2.7)(react@18.2.0))(@types/react@18.2.7)(react@18.2.0))(@types/react@18.2.7)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       react: 18.2.0
     optionalDependencies:
@@ -3465,8 +3454,6 @@ snapshots:
       loose-envify: 1.4.0
 
   regenerator-runtime@0.13.11: {}
-
-  regenerator-runtime@0.14.0: {}
 
   regenerator-runtime@0.14.1: {}
 
