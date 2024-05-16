@@ -81,8 +81,8 @@ export const Home = () => {
 
       const codeResponse = await fetch(
         `${import.meta.env.VITE_COMPILER_URL}/code/${id}`
-      );
-      if (!codeResponse.ok) {
+      ).catch(() => undefined);
+      if (!codeResponse?.ok) {
         setCompileStatus({
           status: "error",
           error: "No source code found.",
@@ -95,8 +95,8 @@ export const Home = () => {
       const compileResponse = await fetch(
         `${import.meta.env.VITE_COMPILER_URL}/code/${id}/compile`,
         { method: "POST" }
-      );
-      if (!compileResponse.ok) {
+      ).catch(() => undefined);
+      if (!compileResponse?.ok) {
         setCompileStatus({ status: "error", error: "Compile failed." });
         return;
       }
