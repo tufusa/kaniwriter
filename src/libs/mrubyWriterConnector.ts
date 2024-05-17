@@ -223,7 +223,7 @@ export class MrubyWriterConnector {
 
     const sendJob = send();
     this.jobQueue.push({ job: sendJob, description: "send data" });
-    return sendJob;
+    return await sendJob;
   }
 
   private async completeJobs() {
@@ -365,7 +365,7 @@ export class MrubyWriterConnector {
       job: enterJob,
       description: "attempt to enter write mode",
     });
-    return enterJob;
+    return await enterJob;
   }
 
   private async onExitWriteMode(): Promise<Success<null>> {
