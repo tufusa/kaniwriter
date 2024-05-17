@@ -419,15 +419,13 @@ export class MrubyWriterConnector {
 
   private async readLine(reader: Reader): Promise<Result<string, Error>> {
     let line = "";
-    while (true) {
+    while (!line.endsWith("\r\n")) {
       const res = await this.read(reader);
       if (res.isFailure()) return res;
 
       line += res.value;
-
-      if (line.endsWith("\r\n")) {
-        return Success.value(line);
-      }
     }
+
+    return Success.value(line);
   }
 }
