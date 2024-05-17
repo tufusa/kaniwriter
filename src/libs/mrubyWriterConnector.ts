@@ -10,7 +10,7 @@ type Listener = (buffer: string[]) => void;
 type Reader = ReadableStreamDefaultReader<Uint8Array>;
 type Writer = WritableStreamDefaultWriter<Uint8Array>;
 type Event = "AttemptToEnterWriteMode" | "SuccessToExitWriteMode";
-type Job = { job: Promise<any>; description: string };
+type Job = { job: Promise<Result<unknown, Error>>; description: string };
 
 const baudRates: Record<Target, number> = {
   ESP32: 115200,
