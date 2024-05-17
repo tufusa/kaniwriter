@@ -4,7 +4,7 @@ import { Result, Success, Failure } from "./result";
 export const targets = ["ESP32", "RBoard"] as const;
 export type Target = (typeof targets)[number];
 
-type Logger = (message?: any, ...params: any[]) => void;
+type Logger = (message: string, ...params: unknown[]) => void;
 type Listener = (buffer: string[]) => void;
 
 type Reader = ReadableStreamDefaultReader<Uint8Array>;
