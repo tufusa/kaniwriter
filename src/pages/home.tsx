@@ -75,6 +75,49 @@ export const Home = () => {
     status: "idle",
   });
 
+  const connect = async () => {
+    const res = await connector.connect(
+      async () => await navigator.serial.requestPort()
+    );
+    if (res.isFailure()) {
+      alert(`ポートを取得できませんでした。\n${res.error}`);
+      console.log(res);
+      return;
+    }
+    await read();
+  };
+
+  const read = async () => {
+    const res = await connector.startListen();
+    console.log(res);
+    if (res.isFailure()) {
+      alert(
+        `受信中にエラーが発生しました。\n${res.error}\ncause: ${res.error.cause}`
+      );
+    }
+  };
+
+  const send = async (text: string) => {
+    const res = await connector.sendCommand(text);
+    console.log(res);
+    if (res.isFailure()) {
+      alert(
+        `送信中にエラーが発生しました。\n${res.error}\ncause: ${res.error.cause}`
+      );
+    }
+  };
+
+  const writeCode = async () => {
+    if (!code) return;
+    const res = await connector.writeCode(code, { execute: true });
+    console.log(res);
+    if (res.isFailure()) {
+      alert(
+        `書き込み中にエラーが発生しました。\n${res.error}\ncause: ${res.error.cause}`
+      );
+    }
+  };
+
   useEffect(() => {
     const compile = async () => {
       setCompileStatus({ status: "idle" });
@@ -137,50 +180,7 @@ export const Home = () => {
     };
 
     autoConnect();
-  }, []);
-
-  const connect = async () => {
-    const res = await connector.connect(
-      async () => await navigator.serial.requestPort()
-    );
-    if (res.isFailure()) {
-      alert(`ポートを取得できませんでした。\n${res.error}`);
-      console.log(res);
-      return;
-    }
-    await read();
-  };
-
-  const read = async () => {
-    const res = await connector.startListen();
-    console.log(res);
-    if (res.isFailure()) {
-      alert(
-        `受信中にエラーが発生しました。\n${res.error}\ncause: ${res.error.cause}`
-      );
-    }
-  };
-
-  const send = async (text: string) => {
-    const res = await connector.sendCommand(text);
-    console.log(res);
-    if (res.isFailure()) {
-      alert(
-        `送信中にエラーが発生しました。\n${res.error}\ncause: ${res.error.cause}`
-      );
-    }
-  };
-
-  const writeCode = async () => {
-    if (!code) return;
-    const res = await connector.writeCode(code, { execute: true });
-    console.log(res);
-    if (res.isFailure()) {
-      alert(
-        `書き込み中にエラーが発生しました。\n${res.error}\ncause: ${res.error.cause}`
-      );
-    }
-  };
+  }, [autoConnectMode, connector, read]);
 
   return (
     <Box
