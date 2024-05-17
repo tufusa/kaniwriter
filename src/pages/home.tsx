@@ -115,7 +115,7 @@ export const Home = () => {
     };
 
     compile();
-  }, []);
+  }, [id]);
 
   useEffect(() => {
     if (!autoConnectMode) return;
