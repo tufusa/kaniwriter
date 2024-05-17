@@ -187,16 +187,14 @@ export class MrubyWriterConnector {
       return Failure.error("No port.");
     }
 
-    const send = new Promise<Result<string, Error>>(async (resovle, reject) => {
+    const send = async (): Promise<Result<string, Error>> => {
       const readerRes = this.getSubReader();
       const writerRes = this.getWriter();
       if (readerRes.isFailure()) {
-        reject(readerRes);
-        return;
+        return readerRes;
       }
       if (writerRes.isFailure()) {
-        reject(writerRes);
-        return;
+        return writerRes;
       }
 
       this.currentSubReader = readerRes.value;
@@ -204,30 +202,28 @@ export class MrubyWriterConnector {
 
       const request = await this.write(writer, chunk);
       if (request.isFailure()) {
-        reject(request);
-        return;
+        return request;
       }
 
       const response = await this.readLine(this.currentSubReader);
       if (response.isFailure()) {
-        reject(response);
-        return;
+        return response;
       }
       if (!response.value.startsWith("+")) {
-        reject(
-          Failure.error("Failed to enter write mode.", { cause: response })
-        );
-        return;
+        return Failure.error("Failed to enter write mode.", {
+          cause: response,
+        });
       }
-
-      resovle(response);
 
       this.currentSubReader.releaseLock();
       writer.releaseLock();
-    });
 
-    this.jobQueue.push({ job: send, description: "send data" });
-    return await send;
+      return response;
+    };
+
+    const sendJob = send();
+    this.jobQueue.push({ job: sendJob, description: "send data" });
+    return sendJob;
   }
 
   private async completeJobs() {
