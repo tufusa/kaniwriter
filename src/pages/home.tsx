@@ -53,7 +53,7 @@ export const Home = () => {
 
   const targetItem = localStorage.getItem("target");
   const [target, setTarget] = useState<Target | undefined>(
-    isTarget(targetItem) ? targetItem : undefined
+    targetItem && isTarget(targetItem) ? targetItem : undefined
   );
   const autoConnectItem = localStorage.getItem("autoConnect");
   const [autoConnectMode, setAutoConnectMode] = useState<boolean>(

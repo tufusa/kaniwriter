@@ -1,5 +1,5 @@
-import { Target, targets } from "./mrubyWriterConnector"
+import { Target, targets } from "./mrubyWriterConnector";
 
-export const isTarget = (object: any): object is Target => {
-  return targets.includes(object);
-}
+export const isTarget = (value: string): value is Target => {
+  return (targets as readonly string[]).includes(value);
+};
