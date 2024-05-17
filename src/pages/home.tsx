@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Box,
   Button,
@@ -75,7 +75,17 @@ export const Home = () => {
     status: "idle",
   });
 
-  const connect = async () => {
+  const read = useCallback(async () => {
+    const res = await connector.startListen();
+    console.log(res);
+    if (res.isFailure()) {
+      alert(
+        `受信中にエラーが発生しました。\n${res.error}\ncause: ${res.error.cause}`
+      );
+    }
+  }, [connector]);
+
+  const connect = useCallback(async () => {
     const res = await connector.connect(
       async () => await navigator.serial.requestPort()
     );
@@ -85,29 +95,22 @@ export const Home = () => {
       return;
     }
     await read();
-  };
+  }, [connector, read]);
 
-  const read = async () => {
-    const res = await connector.startListen();
-    console.log(res);
-    if (res.isFailure()) {
-      alert(
-        `受信中にエラーが発生しました。\n${res.error}\ncause: ${res.error.cause}`
-      );
-    }
-  };
+  const send = useCallback(
+    async (text: string) => {
+      const res = await connector.sendCommand(text);
+      console.log(res);
+      if (res.isFailure()) {
+        alert(
+          `送信中にエラーが発生しました。\n${res.error}\ncause: ${res.error.cause}`
+        );
+      }
+    },
+    [connector]
+  );
 
-  const send = async (text: string) => {
-    const res = await connector.sendCommand(text);
-    console.log(res);
-    if (res.isFailure()) {
-      alert(
-        `送信中にエラーが発生しました。\n${res.error}\ncause: ${res.error.cause}`
-      );
-    }
-  };
-
-  const writeCode = async () => {
+  const writeCode = useCallback(async () => {
     if (!code) return;
     const res = await connector.writeCode(code, { execute: true });
     console.log(res);
@@ -116,7 +119,7 @@ export const Home = () => {
         `書き込み中にエラーが発生しました。\n${res.error}\ncause: ${res.error.cause}`
       );
     }
-  };
+  }, [connector, code]);
 
   useEffect(() => {
     const compile = async () => {
