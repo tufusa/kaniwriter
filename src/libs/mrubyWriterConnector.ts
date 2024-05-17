@@ -149,7 +149,7 @@ export class MrubyWriterConnector {
     this.handleText(`\r\n> ${command}\r\n`);
     console.log("Send", { command });
 
-    return await this.sendData(this.encoder.encode(command));
+    return this.sendData(this.encoder.encode(command));
   }
 
   async writeCode(
@@ -347,26 +347,25 @@ export class MrubyWriterConnector {
       return Failure.error("Cannot write serial port.");
     }
 
-    const enter = new Promise<Result<null, Error>>(async (resolve, reject) => {
+    const enter = async (): Promise<Result<null, Error>> => {
       const response = await this.sendData(this.encoder.encode("\r\n\r\n"));
       if (response.isFailure()) {
-        reject(response);
-        return;
+        return response;
       }
       if (!response.value.includes("+OK mruby/c")) {
-        reject(Failure.error("Cannot enter write mode"));
-        return;
+        return Failure.error("Cannot enter write mode");
       }
 
       this._writeMode = true;
-      resolve(Success.value(null));
-    });
+      return Success.value(null);
+    };
 
+    const enterJob = enter();
     this.jobQueue.push({
-      job: enter,
+      job: enterJob,
       description: "attempt to enter write mode",
     });
-    return await enter;
+    return enterJob;
   }
 
   private async onExitWriteMode(): Promise<Success<null>> {
