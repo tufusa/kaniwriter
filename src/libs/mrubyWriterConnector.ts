@@ -4,13 +4,13 @@ import { Result, Success, Failure } from "./result";
 export const targets = ["ESP32", "RBoard"] as const;
 export type Target = (typeof targets)[number];
 
-type Logger = (message?: any, ...params: any[]) => void;
+type Logger = (message: string, ...params: unknown[]) => void;
 type Listener = (buffer: string[]) => void;
 
 type Reader = ReadableStreamDefaultReader<Uint8Array>;
 type Writer = WritableStreamDefaultWriter<Uint8Array>;
 type Event = "AttemptToEnterWriteMode" | "SuccessToExitWriteMode";
-type Job = { job: Promise<any>; description: string };
+type Job = { job: Promise<Result<unknown, Error>>; description: string };
 
 const baudRates: Record<Target, number> = {
   ESP32: 115200,
@@ -149,7 +149,7 @@ export class MrubyWriterConnector {
     this.handleText(`\r\n> ${command}\r\n`);
     console.log("Send", { command });
 
-    return await this.sendData(this.encoder.encode(command));
+    return this.sendData(this.encoder.encode(command));
   }
 
   async writeCode(
@@ -187,16 +187,14 @@ export class MrubyWriterConnector {
       return Failure.error("No port.");
     }
 
-    const send = new Promise<Result<string, Error>>(async (resovle, reject) => {
+    const send = async (): Promise<Result<string, Error>> => {
       const readerRes = this.getSubReader();
       const writerRes = this.getWriter();
       if (readerRes.isFailure()) {
-        reject(readerRes);
-        return;
+        return readerRes;
       }
       if (writerRes.isFailure()) {
-        reject(writerRes);
-        return;
+        return writerRes;
       }
 
       this.currentSubReader = readerRes.value;
@@ -204,30 +202,28 @@ export class MrubyWriterConnector {
 
       const request = await this.write(writer, chunk);
       if (request.isFailure()) {
-        reject(request);
-        return;
+        return request;
       }
 
       const response = await this.readLine(this.currentSubReader);
       if (response.isFailure()) {
-        reject(response);
-        return;
+        return response;
       }
       if (!response.value.startsWith("+")) {
-        reject(
-          Failure.error("Failed to enter write mode.", { cause: response })
-        );
-        return;
+        return Failure.error("Failed to enter write mode.", {
+          cause: response,
+        });
       }
-
-      resovle(response);
 
       this.currentSubReader.releaseLock();
       writer.releaseLock();
-    });
 
-    this.jobQueue.push({ job: send, description: "send data" });
-    return await send;
+      return response;
+    };
+
+    const sendJob = send();
+    this.jobQueue.push({ job: sendJob, description: "send data" });
+    return await sendJob;
   }
 
   private async completeJobs() {
@@ -351,26 +347,25 @@ export class MrubyWriterConnector {
       return Failure.error("Cannot write serial port.");
     }
 
-    const enter = new Promise<Result<null, Error>>(async (resolve, reject) => {
+    const enter = async (): Promise<Result<null, Error>> => {
       const response = await this.sendData(this.encoder.encode("\r\n\r\n"));
       if (response.isFailure()) {
-        reject(response);
-        return;
+        return response;
       }
       if (!response.value.includes("+OK mruby/c")) {
-        reject(Failure.error("Cannot enter write mode"));
-        return;
+        return Failure.error("Cannot enter write mode");
       }
 
       this._writeMode = true;
-      resolve(Success.value(null));
-    });
+      return Success.value(null);
+    };
 
+    const enterJob = enter();
     this.jobQueue.push({
-      job: enter,
+      job: enterJob,
       description: "attempt to enter write mode",
     });
-    return await enter;
+    return await enterJob;
   }
 
   private async onExitWriteMode(): Promise<Success<null>> {
@@ -424,15 +419,13 @@ export class MrubyWriterConnector {
 
   private async readLine(reader: Reader): Promise<Result<string, Error>> {
     let line = "";
-    while (true) {
+    while (!line.endsWith("\r\n")) {
       const res = await this.read(reader);
       if (res.isFailure()) return res;
 
       line += res.value;
-
-      if (line.endsWith("\r\n")) {
-        return Success.value(line);
-      }
     }
+
+    return Success.value(line);
   }
 }

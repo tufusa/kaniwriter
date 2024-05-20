@@ -1,8 +1,8 @@
 export type Result<T, E extends Error> = Success<T> | Failure<E>;
 
 interface IResult {
-  isSuccess(): this is Success<any>;
-  isFailure(): this is Failure<any>;
+  isSuccess(): this is Success<unknown>;
+  isFailure(): this is Failure<Error>;
 }
 
 export class Success<T> implements IResult {
