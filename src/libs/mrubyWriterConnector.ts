@@ -17,6 +17,16 @@ const baudRates: Record<Target, number> = {
   RBoard: 19200,
 } as const;
 
+const enterWriteModeKeyword: Record<Target, string> = {
+  ESP32: "mrubyc-esp32: Please push Enter key x 2 to mrbwite mode",
+  RBoard: "mruby/c v3.1 start.",
+} as const;
+
+const exitWriteModeKeyword: Record<Target, string> = {
+  ESP32: "mrubyc-esp32: End mrbwrite mode",
+  RBoard: "+OK Execute mruby/c.",
+} as const;
+
 export class MrubyWriterConnector {
   private port: SerialPort | undefined;
   private log: Logger;
@@ -321,12 +331,10 @@ export class MrubyWriterConnector {
   }
 
   private detectEvent(text: string): Success<{ event: Event | null }> {
-    if (
-      text.includes("mrubyc-esp32: Please push Enter key x 2 to mrbwite mode")
-    ) {
+    if (this.target && text.includes(enterWriteModeKeyword[this.target])) {
       return Success.value({ event: "AttemptToEnterWriteMode" });
     }
-    if (text.includes("mrubyc-esp32: End mrbwrite mode")) {
+    if (this.target && text.includes(exitWriteModeKeyword[this.target])) {
       return Success.value({ event: "SuccessToExitWriteMode" });
     }
 
