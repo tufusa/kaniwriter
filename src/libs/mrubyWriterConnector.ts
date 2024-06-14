@@ -149,7 +149,7 @@ export class MrubyWriterConnector {
     this.handleText(`\r\n> ${command}\r\n`);
     console.log("Send", { command });
 
-    return this.sendData(this.encoder.encode(command));
+    return this.sendData(this.encoder.encode(`${command}\r\n`));
   }
 
   async writeCode(
