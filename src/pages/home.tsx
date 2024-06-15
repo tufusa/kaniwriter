@@ -74,6 +74,7 @@ export const Home = () => {
   const [compileStatus, setCompileStatus] = useState<CompileStatus>({
     status: "idle",
   });
+  const [autoScroll, setAutoScroll] = useState(true);
 
   const read = useCallback(async () => {
     const res = await connector.startListen();
@@ -199,8 +200,9 @@ export const Home = () => {
     >
       <Box
         sx={{
+          marginLeft: "2rem",
           width: "15rem",
-          ml: "2rem",
+          minWidth: "15rem",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -297,46 +299,43 @@ export const Home = () => {
             ))}
           </RadioGroup>
         </Box>
-        {/* マイコン接続 */}
-
         <Box
           sx={{
-            width: "100%",
             display: "flex",
-            gap: "1rem",
+            flexDirection: "column",
             justifyContent: "center",
           }}
         >
-          <Button onClick={connect} disabled={!target}>
-            接続
-            <UsbIcon />
-          </Button>
-          <Button
-            onClick={writeCode}
-            disabled={
-              compileStatus.status !== "success" || !connector.writeMode
+          <FormControlLabel
+            control={
+              <Checkbox
+                onChange={(ev) => {
+                  const checked = ev.currentTarget.checked;
+                  setAutoScroll(checked);
+                }}
+                checked={autoScroll}
+              />
             }
-          >
-            書き込み
-            <FlagIcon />
-          </Button>
-        </Box>
-        <FormControlLabel
-          control={
-            <Checkbox
-              onChange={(ev) => {
-                const checked = ev.currentTarget.checked;
-                setAutoConnectMode(checked);
-                localStorage.setItem("autoConnect", `${checked}`);
+            label="自動スクロール"
+            sx={{ color: "black" }}
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                onChange={(ev) => {
+                  const checked = ev.currentTarget.checked;
+                  setAutoConnectMode(checked);
+                  localStorage.setItem("autoConnect", `${checked}`);
 
-                if (checked) window.location.reload();
-              }}
-              checked={autoConnectMode}
-            />
-          }
-          label="自動接続(Experimental)"
-          sx={{ color: "black" }}
-        />
+                  if (checked) window.location.reload();
+                }}
+                checked={autoConnectMode}
+              />
+            }
+            label="自動接続(Experimental)"
+            sx={{ color: "black" }}
+          />
+        </Box>
       </Box>
       <Box
         sx={{
@@ -408,12 +407,11 @@ const CompileStatusCard = (props: { status: CompileStatus }) => {
   );
 };
 
-const Log = (props: { log: string[] }) => {
+const Log = (props: { log: string[]; autoScroll: boolean }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [autoScroll, setAutoScroll] = useState(true);
 
   useEffect(() => {
-    if (!autoScroll) return;
+    if (!props.autoScroll) return;
 
     scrollRef.current?.scroll({
       top: scrollRef.current.scrollHeight,
@@ -449,21 +447,6 @@ const Log = (props: { log: string[] }) => {
           </div>
         ))}
       </Sheet>
-      <Box display="flex" justifyContent="right" width="100%">
-        <FormControlLabel
-          control={
-            <Checkbox
-              onChange={(ev) => {
-                const checked = ev.currentTarget.checked;
-                setAutoScroll(checked);
-              }}
-              checked={autoScroll}
-            />
-          }
-          label="自動スクロール"
-          labelPlacement="start"
-        />
-      </Box>
     </Sheet>
   );
 };
