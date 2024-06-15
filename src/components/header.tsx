@@ -11,10 +11,8 @@ export function Header() {
         height: "4rem",
         backgroundColor: "#ff3227",
         alignItems: "center",
-        top: "0",
-        padding: 0,
-        margin: 0,
         width: "100%",
+        whiteSpace: "nowrap",
       }}
     >
       <Toolbar
