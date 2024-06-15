@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -22,7 +22,6 @@ import {
   Check as CheckIcon,
   ErrorOutline as ErrorOutlineIcon,
 } from "@mui/icons-material";
-import Ansi from "ansi-to-react";
 import Base64 from "base64-js";
 
 import { MrubyWriterConnector, Target } from "libs/mrubyWriterConnector";
@@ -30,6 +29,7 @@ import { isTarget } from "libs/utility";
 import { useQuery } from "hooks/useQuery";
 import RBoard from "/images/Rboard.png";
 import ESP32 from "/images/ESP32.png";
+import { Log } from "components/log";
 
 const targets = [
   {
@@ -404,66 +404,6 @@ const CompileStatusCard = (props: { status: CompileStatus }) => {
           </Box>
         </>
       )}
-    </Sheet>
-  );
-};
-
-const Log = (props: { log: string[] }) => {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [autoScroll, setAutoScroll] = useState(true);
-
-  useEffect(() => {
-    if (!autoScroll) return;
-
-    scrollRef.current?.scroll({
-      top: scrollRef.current.scrollHeight,
-    });
-  });
-
-  return (
-    <Sheet
-      sx={{
-        width: "100%",
-        display: "flex",
-        flexDirection: "column",
-        flexGrow: "1",
-      }}
-    >
-      <Sheet
-        variant="outlined"
-        ref={scrollRef}
-        sx={{
-          px: "0.5rem",
-          boxSizing: "border-box",
-          width: "100%",
-          textAlign: "left",
-          height: "20rem",
-          minHeight: "200px",
-          overflowY: "auto",
-          flexGrow: "1",
-        }}
-      >
-        {props.log.map((text, index) => (
-          <div key={`log-${index}`}>
-            <Ansi>{text}</Ansi>
-          </div>
-        ))}
-      </Sheet>
-      <Box display="flex" justifyContent="right" width="100%">
-        <FormControlLabel
-          control={
-            <Checkbox
-              onChange={(ev) => {
-                const checked = ev.currentTarget.checked;
-                setAutoScroll(checked);
-              }}
-              checked={autoScroll}
-            />
-          }
-          label="自動スクロール"
-          labelPlacement="start"
-        />
-      </Box>
     </Sheet>
   );
 };
