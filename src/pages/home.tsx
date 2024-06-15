@@ -339,14 +339,51 @@ export const Home = () => {
       </Box>
       <Box
         sx={{
-          width: "50%",
+          marginRight: "2rem",
+          minWidth: "25rem",
           display: "flex",
           flexDirection: "column",
           flexGrow: "1",
         }}
       >
-        <Log log={log} />
-        <Box>
+        <Log log={log} autoScroll={autoScroll} />
+        <Box
+          sx={{
+            width: "100%",
+            marginY: "1rem",
+            display: "flex",
+            flexWrap: "wrap",
+            justifyContent: "right",
+            alignItems: "center",
+            gap: "1rem",
+          }}
+        >
+          <Button onClick={connect} disabled={!target}>
+            接続 <UsbIcon />
+          </Button>
+          <Button
+            onClick={writeCode}
+            disabled={
+              compileStatus.status !== "success" || !connector.writeMode
+            }
+            sx={{
+              display: "flex",
+              gap: "0.3rem",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            書き込み <FlagIcon />
+          </Button>
+        </Box>
+        <Box
+          sx={{
+            marginBottom: "0.5rem",
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "right",
+          }}
+        >
           <Input type="text" onChange={(e) => setCommand(e.target.value)} />
           <Input type="submit" onClick={() => send(command)} value="Send" />
         </Box>
@@ -437,8 +474,9 @@ const Log = (props: { log: string[]; autoScroll: boolean }) => {
           textAlign: "left",
           height: "20rem",
           minHeight: "200px",
-          overflowY: "auto",
+          overflow: "auto",
           flexGrow: "1",
+          whiteSpace: "nowrap",
         }}
       >
         {props.log.map((text, index) => (
