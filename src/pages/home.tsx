@@ -435,7 +435,7 @@ const CompileStatusCard = (props: { status: CompileStatus }) => {
         <>
           コンパイル失敗
           <ErrorOutlineIcon color="error" />
-          <Box width="100%">
+          <Box textAlign="center">
             <code>{error}</code>
           </Box>
         </>
