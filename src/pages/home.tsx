@@ -191,8 +191,8 @@ export const Home = () => {
       sx={{
         display: "flex",
         width: "100%",
-        minWidth: "150px",
-        maxWidth: "1000px",
+        minWidth: "30rem",
+        maxWidth: "65rem",
         flexDirection: "row",
         flexGrow: "1",
         gap: "1rem",
