@@ -193,7 +193,7 @@ export const Home = () => {
         display: "flex",
         width: "100%",
         minWidth: "30rem",
-        maxWidth: "min(100dvw, 100vw, 65rem)",
+        maxWidth: "65rem",
         flexDirection: "row",
         flexGrow: "1",
         gap: "1rem",
