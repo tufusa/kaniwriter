@@ -24,6 +24,8 @@ export const Log = (props: { log: string[]; autoScroll: boolean }) => {
         textAlign: "left",
         height: "20rem",
         minHeight: "12.5rem",
+        minWidth: "20rem",
+        maxWidth: "calc(100dvw - 20rem)",
         overflow: "auto",
         flexGrow: "1",
         whiteSpace: "nowrap",
