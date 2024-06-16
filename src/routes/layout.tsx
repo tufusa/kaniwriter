@@ -5,8 +5,8 @@ import { Box } from "@mui/material";
 export const Layout = () => (
   <Box
     sx={{
-      width: "100%",
-      height: "100%",
+      width: "fit-content",
+      height: "fit-content",
       minWidth: "100vw",
       minHeight: "100vh",
       "&": {
