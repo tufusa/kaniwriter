@@ -74,6 +74,7 @@ export const Home = () => {
   const [compileStatus, setCompileStatus] = useState<CompileStatus>({
     status: "idle",
   });
+  const [autoScroll, setAutoScroll] = useState(true);
 
   const read = useCallback(async () => {
     const res = await connector.startListen();
@@ -188,10 +189,11 @@ export const Home = () => {
   return (
     <Box
       sx={{
+        mb: "0.5rem",
         display: "flex",
         width: "100%",
-        minWidth: "150px",
-        maxWidth: "1000px",
+        minWidth: "30rem",
+        maxWidth: "65rem",
         flexDirection: "row",
         flexGrow: "1",
         gap: "1rem",
@@ -199,8 +201,9 @@ export const Home = () => {
     >
       <Box
         sx={{
+          marginLeft: "2rem",
           width: "15rem",
-          ml: "2rem",
+          minWidth: "15rem",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -213,10 +216,6 @@ export const Home = () => {
         <Box
           sx={{
             width: "100%",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
           }}
         >
           {!target && (
@@ -231,8 +230,7 @@ export const Home = () => {
             name="platform"
             sx={{
               width: "100%",
-              flexDirection: "column",
-              gap: 2,
+              gap: "1rem",
               [`& .${radioClasses.checked}`]: {
                 [`& .${radioClasses.action}`]: {
                   inset: -1,
@@ -245,8 +243,8 @@ export const Home = () => {
                 "& > svg": {
                   zIndex: 2,
                   position: "absolute",
-                  top: "-8px",
-                  right: "-8px",
+                  top: "-0.5rem",
+                  right: "-0.5rem",
                   bgcolor: "background.surface",
                   borderRadius: "50%",
                 },
@@ -263,9 +261,8 @@ export const Home = () => {
                   display: "flex",
                   flexDirection: "row",
                   alignItems: "center",
-                  gap: 1,
-                  p: 2,
-                  minWidth: 100,
+                  gap: "1rem",
+                  p: "1rem",
                 }}
               >
                 <Radio
@@ -297,57 +294,90 @@ export const Home = () => {
             ))}
           </RadioGroup>
         </Box>
-        {/* マイコン接続 */}
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+          }}
+        >
+          <FormControlLabel
+            control={
+              <Checkbox
+                onChange={(ev) => {
+                  const checked = ev.currentTarget.checked;
+                  setAutoScroll(checked);
+                }}
+                checked={autoScroll}
+              />
+            }
+            label="自動スクロール"
+            sx={{ color: "black" }}
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                onChange={(ev) => {
+                  const checked = ev.currentTarget.checked;
+                  setAutoConnectMode(checked);
+                  localStorage.setItem("autoConnect", `${checked}`);
 
+                  if (checked) window.location.reload();
+                }}
+                checked={autoConnectMode}
+              />
+            }
+            label="自動接続(Experimental)"
+            sx={{ color: "black" }}
+          />
+        </Box>
+      </Box>
+      <Box
+        sx={{
+          marginRight: "2rem",
+          minWidth: "25rem",
+          display: "flex",
+          flexDirection: "column",
+          flexGrow: "1",
+          gap: "1rem",
+        }}
+      >
+        <Log log={log} autoScroll={autoScroll} />
         <Box
           sx={{
             width: "100%",
             display: "flex",
+            flexWrap: "wrap",
+            justifyContent: "right",
+            alignItems: "center",
             gap: "1rem",
-            justifyContent: "center",
           }}
         >
           <Button onClick={connect} disabled={!target}>
-            接続
-            <UsbIcon />
+            接続 <UsbIcon />
           </Button>
           <Button
             onClick={writeCode}
             disabled={
               compileStatus.status !== "success" || !connector.writeMode
             }
+            sx={{
+              display: "flex",
+              gap: "0.3rem",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
           >
-            書き込み
-            <FlagIcon />
+            書き込み <FlagIcon />
           </Button>
         </Box>
-        <FormControlLabel
-          control={
-            <Checkbox
-              onChange={(ev) => {
-                const checked = ev.currentTarget.checked;
-                setAutoConnectMode(checked);
-                localStorage.setItem("autoConnect", `${checked}`);
-
-                if (checked) window.location.reload();
-              }}
-              checked={autoConnectMode}
-            />
-          }
-          label="自動接続(Experimental)"
-          sx={{ color: "black" }}
-        />
-      </Box>
-      <Box
-        sx={{
-          width: "50%",
-          display: "flex",
-          flexDirection: "column",
-          flexGrow: "1",
-        }}
-      >
-        <Log log={log} />
-        <Box>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "right",
+          }}
+        >
           <Input type="text" onChange={(e) => setCommand(e.target.value)} />
           <Input type="submit" onClick={() => send(command)} value="Send" />
         </Box>
@@ -399,7 +429,7 @@ const CompileStatusCard = (props: { status: CompileStatus }) => {
         <>
           コンパイル失敗
           <ErrorOutlineIcon color="error" />
-          <Box width="100%">
+          <Box textAlign="center">
             <code>{error}</code>
           </Box>
         </>
