@@ -458,7 +458,6 @@ const Log = (props: { log: string[]; autoScroll: boolean }) => {
   return (
     <Sheet
       sx={{
-        width: "100%",
         display: "flex",
         flexDirection: "column",
         flexGrow: "1",
@@ -470,7 +469,6 @@ const Log = (props: { log: string[]; autoScroll: boolean }) => {
         sx={{
           px: "0.5rem",
           boxSizing: "border-box",
-          width: "100%",
           textAlign: "left",
           height: "20rem",
           minHeight: "200px",
