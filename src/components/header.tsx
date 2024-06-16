@@ -10,7 +10,6 @@ export function Header() {
       sx={{
         height: "4rem",
         backgroundColor: "#ff3227",
-        alignItems: "center",
         width: "100%",
         whiteSpace: "nowrap",
       }}
@@ -21,24 +20,25 @@ export function Header() {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          width: "100%",
-          height: "100%",
         }}
       >
         <Box
           sx={{
             display: "flex",
-            justifyContent: "space-between",
             alignItems: "center",
             width: "22rem",
             height: "100%",
+            gap: "0.4rem",
           }}
         >
           <img
             src={icon}
             alt="RubyCity松江のロゴ"
-            height={"100%"}
-            style={{ margin: 0, padding: 0 }}
+            style={{
+              margin: 0,
+              padding: 0,
+              height: "100%",
+            }}
           />
           <Link
             href={import.meta.env.VITE_BASE_URL}
@@ -54,8 +54,7 @@ export function Header() {
         <Box
           sx={{
             height: "100%",
-            right: "1rem",
-            m: "0 2rem",
+            mr: "2rem",
             display: "flex",
             gap: "1rem",
             alignItems: "center",

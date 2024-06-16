@@ -189,6 +189,7 @@ export const Home = () => {
   return (
     <Box
       sx={{
+        mb: "0.5rem",
         display: "flex",
         width: "100%",
         minWidth: "30rem",
@@ -215,10 +216,6 @@ export const Home = () => {
         <Box
           sx={{
             width: "100%",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
           }}
         >
           {!target && (
@@ -233,8 +230,7 @@ export const Home = () => {
             name="platform"
             sx={{
               width: "100%",
-              flexDirection: "column",
-              gap: 2,
+              gap: "1rem",
               [`& .${radioClasses.checked}`]: {
                 [`& .${radioClasses.action}`]: {
                   inset: -1,
@@ -265,9 +261,8 @@ export const Home = () => {
                   display: "flex",
                   flexDirection: "row",
                   alignItems: "center",
-                  gap: 1,
-                  p: 2,
-                  minWidth: 100,
+                  gap: "1rem",
+                  p: "1rem",
                 }}
               >
                 <Radio
@@ -344,13 +339,13 @@ export const Home = () => {
           display: "flex",
           flexDirection: "column",
           flexGrow: "1",
+          gap: "1rem",
         }}
       >
         <Log log={log} autoScroll={autoScroll} />
         <Box
           sx={{
             width: "100%",
-            marginY: "1rem",
             display: "flex",
             flexWrap: "wrap",
             justifyContent: "right",
@@ -378,7 +373,6 @@ export const Home = () => {
         </Box>
         <Box
           sx={{
-            marginBottom: "0.5rem",
             display: "flex",
             flexDirection: "row",
             justifyContent: "right",
@@ -457,32 +451,24 @@ const Log = (props: { log: string[]; autoScroll: boolean }) => {
 
   return (
     <Sheet
+      variant="outlined"
+      ref={scrollRef}
       sx={{
-        display: "flex",
-        flexDirection: "column",
+        px: "0.5rem",
+        boxSizing: "border-box",
+        textAlign: "left",
+        height: "20rem",
+        minHeight: "12.5rem",
+        overflow: "auto",
         flexGrow: "1",
+        whiteSpace: "nowrap",
       }}
     >
-      <Sheet
-        variant="outlined"
-        ref={scrollRef}
-        sx={{
-          px: "0.5rem",
-          boxSizing: "border-box",
-          textAlign: "left",
-          height: "20rem",
-          minHeight: "12.5rem",
-          overflow: "auto",
-          flexGrow: "1",
-          whiteSpace: "nowrap",
-        }}
-      >
-        {props.log.map((text, index) => (
-          <div key={`log-${index}`}>
-            <Ansi>{text}</Ansi>
-          </div>
-        ))}
-      </Sheet>
+      {props.log.map((text, index) => (
+        <div key={`log-${index}`}>
+          <Ansi>{text}</Ansi>
+        </div>
+      ))}
     </Sheet>
   );
 };
