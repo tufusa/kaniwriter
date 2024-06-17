@@ -21,7 +21,10 @@ export class MrubyWriterConnector {
   private port: SerialPort | undefined;
   private log: Logger;
   private onListen: Listener | undefined;
+  private mainReadable: ReadableStream<Uint8Array> | undefined;
   private subReadable: ReadableStream<Uint8Array> | undefined;
+  private mainReadableStreamClosed: Promise<void> | undefined;
+  private aborter: AbortController | undefined;
   private _writeMode: boolean;
   private encoder: TextEncoder;
   private decoder: TextDecoder;
@@ -79,6 +82,47 @@ export class MrubyWriterConnector {
     }
   }
 
+  async disconnect(): Promise<Result<null, Error>> {
+    if (!this.port) {
+      return Failure.error("Not connected.");
+    }
+
+    try {
+      this.handleText("\r\n\u001b[32m> try to disconnect...\u001b[0m\r\n");
+
+      this.aborter?.abort(new Error("disconnect is called."));
+      await this.mainReadableStreamClosed?.catch(() => {});
+
+      await this.currentSubReader?.cancel(() => {});
+      this.currentSubReader?.releaseLock();
+
+      await this.mainReadable?.cancel().catch(() => {});
+      await this.subReadable?.cancel().catch(() => {});
+      await this.port.writable?.abort().catch(() => {});
+
+      const res = await this.close();
+      if (res.isFailure()) {
+        this.handleText(
+          "\r\n\u001b[31m> failed to close serial port.\u001b[0m\r\n"
+        );
+        return res;
+      }
+
+      this.port = undefined;
+      this._writeMode = false;
+
+      this.handleText(
+        "\r\n\u001b[32m> successfully disconnected.\u001b[0m\r\n"
+      );
+      return Success.value(null);
+    } catch (error) {
+      this.handleText(
+        "\r\n\u001b[31m> failed to close serial port.\u001b[0m\r\n"
+      );
+      return Failure.error("Cannot disconnect serial port.", { cause: error });
+    }
+  }
+
   async startListen(): Promise<Result<null, Error>> {
     if (!this.port) {
       return Failure.error("No port.");
@@ -92,7 +136,9 @@ export class MrubyWriterConnector {
 
     try {
       const [mainReadable, subReadable] = this.port.readable.tee();
+      this.mainReadable = mainReadable;
       this.subReadable = subReadable;
+      this.aborter = new AbortController();
 
       const decode = (data: Uint8Array) => this.decoder.decode(data);
       const handleText = (text: string) => this.handleText(text);
@@ -115,9 +161,14 @@ export class MrubyWriterConnector {
         },
       });
 
-      mainReadable.pipeThrough(decodeStream).pipeTo(logStream);
+      this.mainReadableStreamClosed = mainReadable
+        .pipeThrough(decodeStream, this.aborter)
+        .pipeTo(logStream, this.aborter);
 
       while (this.port.readable) {
+        if (this.aborter.signal.aborted) {
+          return Success.value(null);
+        }
         this.currentSubReader = subReadable.getReader();
         await this.read(this.currentSubReader);
         await this.completeJobs();
@@ -127,7 +178,9 @@ export class MrubyWriterConnector {
       return Failure.error("Error excepted while reading.", { cause: error });
     } finally {
       this.currentSubReader?.releaseLock();
-      await this.close();
+      if (!this.aborter?.signal.aborted) {
+        await this.close();
+      }
     }
 
     return Failure.error("Reader is canceled.");
@@ -411,6 +464,8 @@ export class MrubyWriterConnector {
       return Success.value(null);
     } catch (error) {
       return Failure.error("Error excepted while writing.", { cause: error });
+    } finally {
+      writer.releaseLock();
     }
   }
 
