@@ -70,11 +70,11 @@ export class MrubyWriterConnector {
         return Failure.error("Failed to open serial port.");
       }
 
-      this.handleText("\r\n\u001b[32m> connection established\u001b[0m\r\n");
+      this.handleText("\r\n\u001b[32m> connection established.\u001b[0m\r\n");
       return Success.value(null);
     } catch (error) {
       this.port = undefined;
-      this.handleText("\r\n\u001b[31m> failed to connact.\u001b[0m\r\n");
+      this.handleText("\r\n\u001b[31m> failed to connect.\u001b[0m\r\n");
       return Failure.error("Cannot get serial port.", { cause: error });
     }
   }
