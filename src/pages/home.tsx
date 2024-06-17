@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -22,7 +22,6 @@ import {
   Check as CheckIcon,
   ErrorOutline as ErrorOutlineIcon,
 } from "@mui/icons-material";
-import Ansi from "ansi-to-react";
 import Base64 from "base64-js";
 
 import { MrubyWriterConnector, Target } from "libs/mrubyWriterConnector";
@@ -30,6 +29,7 @@ import { isTarget } from "libs/utility";
 import { useQuery } from "hooks/useQuery";
 import RBoard from "/images/Rboard.png";
 import ESP32 from "/images/ESP32.png";
+import { Log } from "components/log";
 
 const targets = [
   {
@@ -434,41 +434,6 @@ const CompileStatusCard = (props: { status: CompileStatus }) => {
           </Box>
         </>
       )}
-    </Sheet>
-  );
-};
-
-const Log = (props: { log: string[]; autoScroll: boolean }) => {
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!props.autoScroll) return;
-
-    scrollRef.current?.scroll({
-      top: scrollRef.current.scrollHeight,
-    });
-  });
-
-  return (
-    <Sheet
-      variant="outlined"
-      ref={scrollRef}
-      sx={{
-        px: "0.5rem",
-        boxSizing: "border-box",
-        textAlign: "left",
-        height: "20rem",
-        minHeight: "12.5rem",
-        overflow: "auto",
-        flexGrow: "1",
-        whiteSpace: "nowrap",
-      }}
-    >
-      {props.log.map((text, index) => (
-        <div key={`log-${index}`}>
-          <Ansi>{text}</Ansi>
-        </div>
-      ))}
     </Sheet>
   );
 };
