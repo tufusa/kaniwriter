@@ -18,6 +18,7 @@ import {
 import {
   Flag as FlagIcon,
   Usb as UsbIcon,
+  Edit as EditIcon,
   CheckCircleRounded as CheckCircleRoundedIcon,
   Check as CheckIcon,
   ErrorOutline as ErrorOutlineIcon,
@@ -362,7 +363,7 @@ export const Home = () => {
           />
           <ControlButton
             label="書き込み"
-            icon={<FlagIcon />}
+            icon={<EditIcon />}
             onClick={writeCode}
             disabled={
               compileStatus.status !== "success" || !connector.writeMode
