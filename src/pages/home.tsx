@@ -18,6 +18,7 @@ import {
   Flag as FlagIcon,
   Usb as UsbIcon,
   Edit as EditIcon,
+  UsbOff as UsbOffIcon,
   CheckCircleRounded as CheckCircleRoundedIcon,
   Check as CheckIcon,
   ErrorOutline as ErrorOutlineIcon,
@@ -97,6 +98,15 @@ export const Home = () => {
     }
     await read();
   }, [connector, read]);
+
+  const disconnect = useCallback(async () => {
+    const res = await connector.disconnect();
+    if (res.isFailure()) {
+      alert(
+        `切断中にエラーが発生しました。\n${res.error}\ncause: ${res.error.cause}`
+      );
+    }
+  }, [connector]);
 
   const send = useCallback(
     async (text: string) => {
@@ -373,6 +383,13 @@ export const Home = () => {
             onClick={() => send("execute")}
             disabled={!connector.isWriteMode}
             color="success"
+          />
+          <ControlButton
+            label="切断"
+            icon={<UsbOffIcon />}
+            onClick={disconnect}
+            disabled={!connector.isConnected}
+            color="danger"
           />
         </Box>
         <Box
