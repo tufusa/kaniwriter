@@ -48,7 +48,7 @@ export class MrubyWriterConnector {
     this.jobQueue = [];
   }
 
-  public get writeMode(): boolean {
+  public get isWriteMode(): boolean {
     return this._writeMode;
   }
 

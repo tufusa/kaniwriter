@@ -366,7 +366,7 @@ export const Home = () => {
             icon={<EditIcon />}
             onClick={writeCode}
             disabled={
-              compileStatus.status !== "success" || !connector.writeMode
+              compileStatus.status !== "success" || !connector.isWriteMode
             }
           />
           <ControlButton
