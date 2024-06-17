@@ -368,6 +368,13 @@ export const Home = () => {
               compileStatus.status !== "success" || !connector.writeMode
             }
           />
+          <ControlButton
+            label="実行"
+            icon={<FlagIcon />}
+            onClick={() => send("execute")}
+            disabled={!connector.isWriteMode}
+            color="success"
+          />
         </Box>
         <Box
           sx={{
