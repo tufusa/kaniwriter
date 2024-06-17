@@ -30,6 +30,7 @@ import { useQuery } from "hooks/useQuery";
 import RBoard from "/images/Rboard.png";
 import ESP32 from "/images/ESP32.png";
 import { Log } from "components/log";
+import { Code } from "components/code";
 
 const targets = [
   {
@@ -59,6 +60,11 @@ export const Home = () => {
   const [autoConnectMode, setAutoConnectMode] = useState<boolean>(
     autoConnectItem === "true"
   );
+
+  // 送信したmruby/cのソースコード
+  const [sourceCode, setSourceCode] = useState<string>("");
+  // 送信したmruby/cのソースコードを表示するかどうか
+  const [isOpen, setIsOpen] = useState(false);
 
   const [connector] = useState<MrubyWriterConnector>(
     new MrubyWriterConnector({
@@ -121,6 +127,24 @@ export const Home = () => {
       );
     }
   }, [connector, code]);
+
+  // 送信したmruby/cのソースコードを取得
+  useEffect(() => {
+    const fetchCode = async () => {
+      const res = await fetch(
+        //後でリプレイスする
+        `https://ceres.epi.it.matsue-ct.ac.jp/compile/code/${id}`
+      ).catch(() => undefined);
+      if (!res?.ok) {
+        console.error("No source code found.");
+        return;
+      }
+      const json = await res.json();
+      const code = decodeURIComponent(atob(json.code));
+      setSourceCode(code);
+    };
+    fetchCode();
+  });
 
   useEffect(() => {
     const compile = async () => {
@@ -187,202 +211,205 @@ export const Home = () => {
   }, [autoConnectMode, connector, read]);
 
   return (
-    <Box
-      sx={{
-        mb: "0.5rem",
-        display: "flex",
-        width: "100%",
-        minWidth: "30rem",
-        maxWidth: "65rem",
-        flexDirection: "row",
-        flexGrow: "1",
-        gap: "1rem",
-      }}
-    >
+    <>
       <Box
         sx={{
-          marginLeft: "2rem",
-          width: "15rem",
-          minWidth: "15rem",
+          mb: "0.5rem",
           display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: "2rem",
-        }}
-      >
-        <CompileStatusCard status={compileStatus} />
-
-        {/* マイコン選択 */}
-        <Box
-          sx={{
-            width: "100%",
-          }}
-        >
-          {!target && (
-            <Typography variant="body1" color="red">
-              書き込みターゲットを選択してください。
-            </Typography>
-          )}
-          <RadioGroup
-            aria-label="platform"
-            defaultValue="Website"
-            overlay
-            name="platform"
-            sx={{
-              width: "100%",
-              gap: "1rem",
-              [`& .${radioClasses.checked}`]: {
-                [`& .${radioClasses.action}`]: {
-                  inset: -1,
-                  border: "3px solid",
-                  borderColor: "primary.500",
-                },
-              },
-              [`& .${radioClasses.radio}`]: {
-                display: "contents",
-                "& > svg": {
-                  zIndex: 2,
-                  position: "absolute",
-                  top: "-0.5rem",
-                  right: "-0.5rem",
-                  bgcolor: "background.surface",
-                  borderRadius: "50%",
-                },
-              },
-            }}
-          >
-            {targets.map((value, index) => (
-              <Sheet
-                key={index}
-                variant="outlined"
-                sx={{
-                  borderRadius: "md",
-                  boxShadow: "sm",
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: "1rem",
-                  p: "1rem",
-                }}
-              >
-                <Radio
-                  id={value.title}
-                  value={value.title}
-                  checkedIcon={<CheckCircleRoundedIcon />}
-                  checked={target === value.title}
-                  onChange={() => {
-                    setTarget(value.title);
-                    connector.setTarget(value.title);
-                    localStorage.setItem("target", value.title);
-                  }}
-                />
-                <FormLabel htmlFor={value.title}>
-                  <Typography fontFamily={"'M PLUS Rounded 1c', sans-serif"}>
-                    {value.title}
-                  </Typography>
-                </FormLabel>
-                <img
-                  src={value.image}
-                  alt={value.title}
-                  style={{
-                    aspectRatio: "1/1",
-                    width: "6rem",
-                    margin: "0 auto",
-                  }}
-                />
-              </Sheet>
-            ))}
-          </RadioGroup>
-        </Box>
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-          }}
-        >
-          <FormControlLabel
-            control={
-              <Checkbox
-                onChange={(ev) => {
-                  const checked = ev.currentTarget.checked;
-                  setAutoScroll(checked);
-                }}
-                checked={autoScroll}
-              />
-            }
-            label="自動スクロール"
-            sx={{ color: "black" }}
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                onChange={(ev) => {
-                  const checked = ev.currentTarget.checked;
-                  setAutoConnectMode(checked);
-                  localStorage.setItem("autoConnect", `${checked}`);
-
-                  if (checked) window.location.reload();
-                }}
-                checked={autoConnectMode}
-              />
-            }
-            label="自動接続(Experimental)"
-            sx={{ color: "black" }}
-          />
-        </Box>
-      </Box>
-      <Box
-        sx={{
-          marginRight: "2rem",
-          minWidth: "25rem",
-          display: "flex",
-          flexDirection: "column",
+          width: "100%",
+          minWidth: "30rem",
+          maxWidth: "65rem",
+          flexDirection: "row",
           flexGrow: "1",
           gap: "1rem",
         }}
       >
-        <Log log={log} autoScroll={autoScroll} />
         <Box
           sx={{
-            width: "100%",
+            marginLeft: "2rem",
+            width: "15rem",
+            minWidth: "15rem",
             display: "flex",
-            flexWrap: "wrap",
-            justifyContent: "right",
+            flexDirection: "column",
             alignItems: "center",
-            gap: "1rem",
+            gap: "2rem",
           }}
         >
-          <Button onClick={connect} disabled={!target}>
-            接続 <UsbIcon />
-          </Button>
-          <Button
-            onClick={writeCode}
-            disabled={
-              compileStatus.status !== "success" || !connector.writeMode
-            }
+          <CompileStatusCard status={compileStatus} />
+
+          {/* マイコン選択 */}
+          <Box
+            sx={{
+              width: "100%",
+            }}
+          >
+            {!target && (
+              <Typography variant="body1" color="red">
+                書き込みターゲットを選択してください。
+              </Typography>
+            )}
+            <RadioGroup
+              aria-label="platform"
+              defaultValue="Website"
+              overlay
+              name="platform"
+              sx={{
+                width: "100%",
+                gap: "1rem",
+                [`& .${radioClasses.checked}`]: {
+                  [`& .${radioClasses.action}`]: {
+                    inset: -1,
+                    border: "3px solid",
+                    borderColor: "primary.500",
+                  },
+                },
+                [`& .${radioClasses.radio}`]: {
+                  display: "contents",
+                  "& > svg": {
+                    zIndex: 2,
+                    position: "absolute",
+                    top: "-0.5rem",
+                    right: "-0.5rem",
+                    bgcolor: "background.surface",
+                    borderRadius: "50%",
+                  },
+                },
+              }}
+            >
+              {targets.map((value, index) => (
+                <Sheet
+                  key={index}
+                  variant="outlined"
+                  sx={{
+                    borderRadius: "md",
+                    boxShadow: "sm",
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: "1rem",
+                    p: "1rem",
+                  }}
+                >
+                  <Radio
+                    id={value.title}
+                    value={value.title}
+                    checkedIcon={<CheckCircleRoundedIcon />}
+                    checked={target === value.title}
+                    onChange={() => {
+                      setTarget(value.title);
+                      connector.setTarget(value.title);
+                      localStorage.setItem("target", value.title);
+                    }}
+                  />
+                  <FormLabel htmlFor={value.title}>
+                    <Typography fontFamily={"'M PLUS Rounded 1c', sans-serif"}>
+                      {value.title}
+                    </Typography>
+                  </FormLabel>
+                  <img
+                    src={value.image}
+                    alt={value.title}
+                    style={{
+                      aspectRatio: "1/1",
+                      width: "6rem",
+                      margin: "0 auto",
+                    }}
+                  />
+                </Sheet>
+              ))}
+            </RadioGroup>
+          </Box>
+          <Box
             sx={{
               display: "flex",
-              gap: "0.3rem",
-              alignItems: "center",
+              flexDirection: "column",
               justifyContent: "center",
             }}
           >
-            書き込み <FlagIcon />
-          </Button>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  onChange={(ev) => {
+                    const checked = ev.currentTarget.checked;
+                    setAutoScroll(checked);
+                  }}
+                  checked={autoScroll}
+                />
+              }
+              label="自動スクロール"
+              sx={{ color: "black" }}
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  onChange={(ev) => {
+                    const checked = ev.currentTarget.checked;
+                    setAutoConnectMode(checked);
+                    localStorage.setItem("autoConnect", `${checked}`);
+
+                    if (checked) window.location.reload();
+                  }}
+                  checked={autoConnectMode}
+                />
+              }
+              label="自動接続(Experimental)"
+              sx={{ color: "black" }}
+            />
+          </Box>
         </Box>
         <Box
           sx={{
+            marginRight: "2rem",
+            minWidth: "25rem",
             display: "flex",
-            flexDirection: "row",
-            justifyContent: "right",
+            flexDirection: "column",
+            flexGrow: "1",
+            gap: "1rem",
           }}
         >
-          <Input type="text" onChange={(e) => setCommand(e.target.value)} />
-          <Input type="submit" onClick={() => send(command)} value="Send" />
+          <Log log={log} autoScroll={autoScroll} />
+          <Box
+            sx={{
+              width: "100%",
+              display: "flex",
+              flexWrap: "wrap",
+              justifyContent: "right",
+              alignItems: "center",
+              gap: "1rem",
+            }}
+          >
+            <Button onClick={connect} disabled={!target}>
+              接続 <UsbIcon />
+            </Button>
+            <Button
+              onClick={writeCode}
+              disabled={
+                compileStatus.status !== "success" || !connector.writeMode
+              }
+              sx={{
+                display: "flex",
+                gap: "0.3rem",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              書き込み <FlagIcon />
+            </Button>
+          </Box>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "right",
+            }}
+          >
+            <Input type="text" onChange={(e) => setCommand(e.target.value)} />
+            <Input type="submit" onClick={() => send(command)} value="Send" />
+          </Box>
         </Box>
       </Box>
-    </Box>
+      <Code sourceCode={sourceCode} isOpen={isOpen} setIsOpen={setIsOpen} />
+    </>
   );
 };
 
