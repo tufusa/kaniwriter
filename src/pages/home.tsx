@@ -67,7 +67,6 @@ export const Home = () => {
       target,
       log: (message, params) => console.log(message, params),
       onListen: (buffer) => setLog([...buffer]),
-      useAnsi: true,
     })
   );
   const [command, setCommand] = useState("");

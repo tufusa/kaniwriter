@@ -29,18 +29,11 @@ export class MrubyWriterConnector {
   private target: Target | undefined;
   private currentSubReader: Reader | undefined;
   private jobQueue: Job[];
-  readonly useAnsi: boolean;
 
-  constructor(config: {
-    target?: Target;
-    log: Logger;
-    onListen?: Listener;
-    useAnsi?: boolean;
-  }) {
+  constructor(config: { target?: Target; log: Logger; onListen?: Listener }) {
     this.target = config.target;
     this.log = config.log;
     this.onListen = config.onListen;
-    this.useAnsi = config.useAnsi ?? false;
     this.buffer = [];
     this._writeMode = false;
     this.encoder = new TextEncoder();
