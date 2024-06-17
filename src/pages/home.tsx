@@ -30,6 +30,7 @@ import { useQuery } from "hooks/useQuery";
 import RBoard from "/images/Rboard.png";
 import ESP32 from "/images/ESP32.png";
 import { Log } from "components/log";
+import { ControlButton } from "components/ControlButton";
 
 const targets = [
   {
@@ -353,23 +354,20 @@ export const Home = () => {
             gap: "1rem",
           }}
         >
-          <Button onClick={connect} disabled={!target}>
-            接続 <UsbIcon />
-          </Button>
-          <Button
+          <ControlButton
+            label="接続"
+            icon={<UsbIcon />}
+            onClick={connect}
+            disabled={!target}
+          />
+          <ControlButton
+            label="書き込み"
+            icon={<FlagIcon />}
             onClick={writeCode}
             disabled={
               compileStatus.status !== "success" || !connector.writeMode
             }
-            sx={{
-              display: "flex",
-              gap: "0.3rem",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            書き込み <FlagIcon />
-          </Button>
+          />
         </Box>
         <Box
           sx={{
