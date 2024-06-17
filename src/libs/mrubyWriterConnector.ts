@@ -41,6 +41,10 @@ export class MrubyWriterConnector {
     this.jobQueue = [];
   }
 
+  public get isConnected(): boolean {
+    return this.port != null;
+  }
+
   public get isWriteMode(): boolean {
     return this._writeMode;
   }

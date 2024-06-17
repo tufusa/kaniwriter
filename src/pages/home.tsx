@@ -357,7 +357,7 @@ export const Home = () => {
             label="接続"
             icon={<UsbIcon />}
             onClick={connect}
-            disabled={!target}
+            disabled={!target || connector.isConnected}
           />
           <ControlButton
             label="書き込み"
