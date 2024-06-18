@@ -91,14 +91,14 @@ export class MrubyWriterConnector {
       this.handleText("\r\n\u001b[32m> try to disconnect...\u001b[0m\r\n");
 
       this.aborter?.abort(new Error("disconnect is called."));
-      await this.mainReadableStreamClosed?.catch(() => {});
+      await this.mainReadableStreamClosed?.catch(() => undefined);
 
-      await this.currentSubReader?.cancel(() => {});
+      await this.currentSubReader?.cancel(() => undefined);
       this.currentSubReader?.releaseLock();
 
-      await this.mainReadable?.cancel().catch(() => {});
-      await this.subReadable?.cancel().catch(() => {});
-      await this.port.writable?.abort().catch(() => {});
+      await this.mainReadable?.cancel().catch(() => undefined);
+      await this.subReadable?.cancel().catch(() => undefined);
+      await this.port.writable?.abort().catch(() => undefined);
 
       const res = await this.close();
       if (res.isFailure()) {
