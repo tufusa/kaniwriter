@@ -8,6 +8,7 @@ interface CodeProps {
   setIsOpen: (isOpen: boolean) => void;
 }
 
+// 送信したソースコードを表示するページ下部のコンポーネント
 export const Code = ({ sourceCode, isOpen, setIsOpen }: CodeProps) => {
   const [code, setCode] = useState<string>(sourceCode);
   useEffect(() => {
@@ -23,26 +24,27 @@ export const Code = ({ sourceCode, isOpen, setIsOpen }: CodeProps) => {
   return (
     <Box
       sx={{
-        width: "100vw",
+        minWidth: "30rem",
+        maxWidth: "65rem",
+        width: "100%",
       }}
     >
       <Card
         sx={{
           p: "0.5rem",
-          m: "0 1rem",
           borderRadius: "1rem 1rem 0 0",
+          margin: "0 2rem",
         }}
       >
         <Button
           sx={{
-            width: "100vw",
             height: "2rem",
             p: "0.5rem",
           }}
           onClick={() => setIsOpen(!isOpen)}
         >
           <img src="" />
-          <Typography>
+          <Typography fontFamily={"'M PLUS Rounded 1c', sans-serif"}>
             {isOpen ? "ソースコードを非表示" : "ソースコードを表示"}
           </Typography>
         </Button>
@@ -51,12 +53,19 @@ export const Code = ({ sourceCode, isOpen, setIsOpen }: CodeProps) => {
           <Box
             sx={{
               display: "flex",
-              width: "100%",
               justifyContent: "center",
+              width: "90%",
+              p: "1rem",
+
+              maxWidth: "65rem",
+              minWidth: "30rem",
             }}
           >
             <div
-              style={{ width: "90%" }}
+              style={{
+                width: "100%",
+                overflow: "scroll",
+              }}
               dangerouslySetInnerHTML={{ __html: code }}
             ></div>
           </Box>

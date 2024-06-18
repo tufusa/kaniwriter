@@ -13,9 +13,15 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
+  
 }
 
 body {
   margin: 0;
   padding: 0;
+}
+
+/* shiki.jsのフォント指定 */
+code {
+    font-family: "Noto Sans Mono", monospace;
 }
