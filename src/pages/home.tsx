@@ -179,16 +179,20 @@ export const Home = () => {
         <Sheet
           variant="outlined"
           sx={{
-            py: "1rem",
+            pt: "1rem",
+            pb: "0.5rem",
             width: "100%",
             boxSizing: "border-box",
             borderRadius: "sm",
-            borderColor: compileStatus.status == "error" ? "red" : "lightgrey",
+            borderColor:
+              getVersionsStatus == "error" || compileStatus.status == "error"
+                ? "red"
+                : "lightgrey",
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
             alignItems: "center",
-            gap: "1rem",
+            gap: "0.5rem",
           }}
         >
           <Box sx={{ width: "calc(100% - 2rem)" }}>
@@ -207,7 +211,12 @@ export const Home = () => {
               sx={{ width: "100%" }}
             />
           </Box>
-          <CompileStatusCard status={compileStatus} />
+          <CompileStatusCard
+            status={
+              getVersionsStatus == "error" ? "error" : compileStatus.status
+            }
+            error={compileStatus.error}
+          />
         </Sheet>
 
         {/* マイコン選択 */}
