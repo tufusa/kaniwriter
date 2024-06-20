@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 export type Version = string;
 type Status = "idle" | "load" | "success" | "error";
-type GetVersionsResponse = { version: Version }[];
+type VersionsResponse = { version: Version }[];
 
 export const useVersions = (): [versions: Version[], status: Status] => {
   const [versions, setVersions] = useState<Version[]>([]);
@@ -19,7 +19,16 @@ export const useVersions = (): [versions: Version[], status: Status] => {
       return;
     }
 
-    const versionsData: GetVersionsResponse = await res.json();
+    const versionsData = await res
+      .json()
+      .then((json) => json as VersionsResponse)
+      .catch(() => undefined);
+    if (!versionsData) {
+      setVersions([]);
+      setStatus("error");
+      return;
+    }
+
     setVersions(versionsData.map((record) => record.version));
     setStatus("success");
   };

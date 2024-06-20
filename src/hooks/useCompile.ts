@@ -7,6 +7,10 @@ export type CompileStatus = {
   error?: string;
 };
 type Compile = (version: Version) => void;
+type CompileResponse = {
+  binary: string;
+  error: string;
+};
 
 export const useCompile = (
   id: string | undefined,
@@ -41,23 +45,23 @@ export const useCompile = (
 
       setStatus({ status: "compile" });
 
-      const compileResponse = await fetch(
+      const response = await fetch(
         `${import.meta.env.VITE_COMPILER_URL}/code/${id}/compile`,
         {
           body: JSON.stringify({ version }),
           method: "POST",
         }
       ).catch(() => undefined);
-      if (!compileResponse?.ok) {
+      if (!response?.ok) {
         setStatus({ status: "error", error: "Compile failed." });
         return;
       }
 
-      const compileResult = (await compileResponse.json()) as {
-        binary: string;
-        error: string;
-      };
-      if (compileResult.error !== "") {
+      const compileResult = await response
+        .json()
+        .then((json) => json as CompileResponse)
+        .catch(() => undefined);
+      if (!compileResult || compileResult.error !== "") {
         setStatus({ status: "error", error: "Compile failed." });
         return;
       }
