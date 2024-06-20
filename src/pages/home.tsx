@@ -7,23 +7,14 @@ import {
   RadioGroup,
   Sheet,
 } from "@mui/joy";
-import {
-  Checkbox,
-  CircularProgress,
-  FormControlLabel,
-  Input,
-  Typography,
-} from "@mui/material";
+import { Checkbox, FormControlLabel, Input, Typography } from "@mui/material";
 import {
   Flag as FlagIcon,
   Usb as UsbIcon,
   Edit as EditIcon,
   UsbOff as UsbOffIcon,
   CheckCircleRounded as CheckCircleRoundedIcon,
-  Check as CheckIcon,
-  ErrorOutline as ErrorOutlineIcon,
 } from "@mui/icons-material";
-import Base64 from "base64-js";
 
 import { MrubyWriterConnector, Target } from "libs/mrubyWriterConnector";
 import { isTarget } from "libs/utility";
@@ -32,6 +23,10 @@ import RBoard from "/images/Rboard.png";
 import ESP32 from "/images/ESP32.png";
 import { Log } from "components/log";
 import { ControlButton } from "components/ControlButton";
+import { CompilerSelector } from "components/CompilerSelector";
+import { Version, useVersions } from "hooks/useVersions";
+import { useCompile } from "hooks/useCompile";
+import { CompileStatusCard } from "components/CompileStatusCard";
 
 const targets = [
   {
@@ -44,14 +39,11 @@ const targets = [
   },
 ] as const satisfies readonly { title: Target; image: string }[];
 
-type CompileStatus = {
-  status: "idle" | "compile" | "success" | "error";
-  error?: string;
-};
+const defaultCompilderVersion = "3.2.0" satisfies Version;
 
 export const Home = () => {
   const query = useQuery();
-  const id = query.get("id");
+  const id = query.get("id") ?? undefined;
 
   const targetItem = localStorage.getItem("target");
   const [target, setTarget] = useState<Target | undefined>(
@@ -72,10 +64,9 @@ export const Home = () => {
   const [command, setCommand] = useState("");
   const [log, setLog] = useState<string[]>([]);
   const [code, setCode] = useState<Uint8Array>();
-  const [compileStatus, setCompileStatus] = useState<CompileStatus>({
-    status: "idle",
-  });
   const [autoScroll, setAutoScroll] = useState(true);
+  const [versions, getVersionsStatus] = useVersions();
+  const [compileStatus, compile] = useCompile(id, setCode);
 
   const read = useCallback(async () => {
     const res = await connector.startListen();
@@ -133,46 +124,11 @@ export const Home = () => {
   }, [connector, code]);
 
   useEffect(() => {
-    const compile = async () => {
-      setCompileStatus({ status: "idle" });
+    if (getVersionsStatus != "success") return;
+    if (!versions.includes(defaultCompilderVersion)) return;
 
-      const codeResponse = await fetch(
-        `${import.meta.env.VITE_COMPILER_URL}/code/${id}`
-      ).catch(() => undefined);
-      if (!codeResponse?.ok) {
-        setCompileStatus({
-          status: "error",
-          error: "No source code found.",
-        });
-        return;
-      }
-
-      setCompileStatus({ status: "compile" });
-
-      const compileResponse = await fetch(
-        `${import.meta.env.VITE_COMPILER_URL}/code/${id}/compile`,
-        { method: "POST" }
-      ).catch(() => undefined);
-      if (!compileResponse?.ok) {
-        setCompileStatus({ status: "error", error: "Compile failed." });
-        return;
-      }
-
-      const compileResult = (await compileResponse.json()) as {
-        binary: string;
-        error: string;
-      };
-      if (compileResult.error !== "") {
-        setCompileStatus({ status: "error", error: "Compile failed." });
-        return;
-      }
-
-      setCode(Base64.toByteArray(compileResult.binary));
-      setCompileStatus({ status: "success" });
-    };
-
-    compile();
-  }, [id]);
+    compile(defaultCompilderVersion);
+  }, [compile, versions, getVersionsStatus]);
 
   useEffect(() => {
     if (!autoConnectMode) return;
@@ -217,10 +173,42 @@ export const Home = () => {
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          gap: "2rem",
+          gap: "1.5rem",
         }}
       >
-        <CompileStatusCard status={compileStatus} />
+        <Sheet
+          variant="outlined"
+          sx={{
+            py: "1rem",
+            width: "100%",
+            boxSizing: "border-box",
+            borderRadius: "sm",
+            borderColor: compileStatus.status == "error" ? "red" : "lightgrey",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            gap: "1rem",
+          }}
+        >
+          <Box sx={{ width: "calc(100% - 2rem)" }}>
+            <Typography
+              fontFamily={"'M PLUS Rounded 1c', sans-serif"}
+              variant="caption"
+              color="GrayText"
+            >
+              コンパイラバージョン
+            </Typography>
+            <CompilerSelector
+              versions={versions.sort()}
+              defaultVersion="3.2.0"
+              disabled={getVersionsStatus != "success"}
+              onChange={(version) => compile(version)}
+              sx={{ width: "100%" }}
+            />
+          </Box>
+          <CompileStatusCard status={compileStatus} />
+        </Sheet>
 
         {/* マイコン選択 */}
         <Box
@@ -404,57 +392,5 @@ export const Home = () => {
         </Box>
       </Box>
     </Box>
-  );
-};
-
-const CompileStatusCard = (props: { status: CompileStatus }) => {
-  const { status, error } = props.status;
-
-  return (
-    <Sheet
-      variant="outlined"
-      color="neutral"
-      sx={{
-        p: "0.5rem 1.5rem",
-        width: "100%",
-        boxSizing: "border-box",
-        borderRadius: "sm",
-        borderColor: status == "error" ? "red" : "lightgrey",
-        display: "flex",
-        flexWrap: "wrap",
-        flexDirection: "row",
-        justifyContent: "center",
-        alignItems: "center",
-        fontFamily: "'M PLUS Rounded 1c', sans-serif",
-      }}
-    >
-      {status === "idle" && (
-        <>
-          コンパイル待機中
-          <CircularProgress size="1.5rem" sx={{ ml: "1rem" }} />
-        </>
-      )}
-      {status === "compile" && (
-        <>
-          コンパイル中
-          <CircularProgress size="1.5rem" sx={{ ml: "1rem" }} />
-        </>
-      )}
-      {status === "success" && (
-        <>
-          コンパイル完了
-          <CheckIcon color="success" />
-        </>
-      )}
-      {status === "error" && (
-        <>
-          コンパイル失敗
-          <ErrorOutlineIcon color="error" />
-          <Box textAlign="center">
-            <code>{error}</code>
-          </Box>
-        </>
-      )}
-    </Sheet>
   );
 };
