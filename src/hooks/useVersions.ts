@@ -10,16 +10,16 @@ export const useVersions = (): [versions: Version[], status: Status] => {
 
   const getVersions = async () => {
     setStatus("load");
-    const res = await fetch(
+    const response = await fetch(
       `${import.meta.env.VITE_COMPILER_URL}/versions`
     ).catch(() => undefined);
-    if (!res?.ok) {
+    if (!response?.ok) {
       setVersions([]);
       setStatus("error");
       return;
     }
 
-    const versionsData = await res
+    const versionsData = await response
       .json()
       .then((json) => json as VersionsResponse)
       .catch(() => undefined);

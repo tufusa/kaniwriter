@@ -45,19 +45,19 @@ export const useCompile = (
 
       setStatus({ status: "compile" });
 
-      const response = await fetch(
+      const compileResponse = await fetch(
         `${import.meta.env.VITE_COMPILER_URL}/code/${id}/compile`,
         {
           body: JSON.stringify({ version }),
           method: "POST",
         }
       ).catch(() => undefined);
-      if (!response?.ok) {
+      if (!compileResponse?.ok) {
         setStatus({ status: "error", error: "Compile failed." });
         return;
       }
 
-      const compileResult = await response
+      const compileResult = await compileResponse
         .json()
         .then((json) => json as CompileResponse)
         .catch(() => undefined);
