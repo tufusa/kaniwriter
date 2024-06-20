@@ -17,11 +17,24 @@ const baudRates: Record<Target, number> = {
   RBoard: 19200,
 } as const;
 
+const enterWriteModeKeyword: Record<Target, RegExp> = {
+  ESP32: /mrubyc-esp32: Please push Enter key x 2 to mrbwite mode/,
+  RBoard: /mruby\/c v\d.\d start./,
+} as const;
+
+const exitWriteModeKeyword: Record<Target, RegExp> = {
+  ESP32: /mrubyc-esp32: End mrbwrite mode/,
+  RBoard: /\+OK Execute mruby\/c./,
+} as const;
+
 export class MrubyWriterConnector {
   private port: SerialPort | undefined;
   private log: Logger;
   private onListen: Listener | undefined;
+  private mainReadable: ReadableStream<Uint8Array> | undefined;
   private subReadable: ReadableStream<Uint8Array> | undefined;
+  private mainReadableStreamClosed: Promise<void> | undefined;
+  private aborter: AbortController | undefined;
   private _writeMode: boolean;
   private encoder: TextEncoder;
   private decoder: TextDecoder;
@@ -29,18 +42,11 @@ export class MrubyWriterConnector {
   private target: Target | undefined;
   private currentSubReader: Reader | undefined;
   private jobQueue: Job[];
-  readonly useAnsi: boolean;
 
-  constructor(config: {
-    target?: Target;
-    log: Logger;
-    onListen?: Listener;
-    useAnsi?: boolean;
-  }) {
+  constructor(config: { target?: Target; log: Logger; onListen?: Listener }) {
     this.target = config.target;
     this.log = config.log;
     this.onListen = config.onListen;
-    this.useAnsi = config.useAnsi ?? false;
     this.buffer = [];
     this._writeMode = false;
     this.encoder = new TextEncoder();
@@ -48,7 +54,11 @@ export class MrubyWriterConnector {
     this.jobQueue = [];
   }
 
-  public get writeMode(): boolean {
+  public get isConnected(): boolean {
+    return this.port != null;
+  }
+
+  public get isWriteMode(): boolean {
     return this._writeMode;
   }
 
@@ -73,12 +83,53 @@ export class MrubyWriterConnector {
         return Failure.error("Failed to open serial port.");
       }
 
-      this.handleText("\r\n\u001b[32m> connection established\u001b[0m\r\n");
+      this.handleText("\r\n\u001b[32m> connection established.\u001b[0m\r\n");
       return Success.value(null);
     } catch (error) {
       this.port = undefined;
-      this.handleText("\r\n\u001b[31m> failed to connact.\u001b[0m\r\n");
+      this.handleText("\r\n\u001b[31m> failed to connect.\u001b[0m\r\n");
       return Failure.error("Cannot get serial port.", { cause: error });
+    }
+  }
+
+  async disconnect(): Promise<Result<null, Error>> {
+    if (!this.port) {
+      return Failure.error("Not connected.");
+    }
+
+    try {
+      this.handleText("\r\n\u001b[32m> try to disconnect...\u001b[0m\r\n");
+
+      this.aborter?.abort(new Error("disconnect is called."));
+      await this.mainReadableStreamClosed?.catch(() => undefined);
+
+      await this.currentSubReader?.cancel(() => undefined);
+      this.currentSubReader?.releaseLock();
+
+      await this.mainReadable?.cancel().catch(() => undefined);
+      await this.subReadable?.cancel().catch(() => undefined);
+      await this.port.writable?.abort().catch(() => undefined);
+
+      const res = await this.close();
+      if (res.isFailure()) {
+        this.handleText(
+          "\r\n\u001b[31m> failed to close serial port.\u001b[0m\r\n"
+        );
+        return res;
+      }
+
+      this.port = undefined;
+      this._writeMode = false;
+
+      this.handleText(
+        "\r\n\u001b[32m> successfully disconnected.\u001b[0m\r\n"
+      );
+      return Success.value(null);
+    } catch (error) {
+      this.handleText(
+        "\r\n\u001b[31m> failed to close serial port.\u001b[0m\r\n"
+      );
+      return Failure.error("Cannot disconnect serial port.", { cause: error });
     }
   }
 
@@ -95,7 +146,9 @@ export class MrubyWriterConnector {
 
     try {
       const [mainReadable, subReadable] = this.port.readable.tee();
+      this.mainReadable = mainReadable;
       this.subReadable = subReadable;
+      this.aborter = new AbortController();
 
       const decode = (data: Uint8Array) => this.decoder.decode(data);
       const handleText = (text: string) => this.handleText(text);
@@ -118,9 +171,14 @@ export class MrubyWriterConnector {
         },
       });
 
-      mainReadable.pipeThrough(decodeStream).pipeTo(logStream);
+      this.mainReadableStreamClosed = mainReadable
+        .pipeThrough(decodeStream, this.aborter)
+        .pipeTo(logStream, this.aborter);
 
       while (this.port.readable) {
+        if (this.aborter.signal.aborted) {
+          return Success.value(null);
+        }
         this.currentSubReader = subReadable.getReader();
         await this.read(this.currentSubReader);
         await this.completeJobs();
@@ -130,7 +188,9 @@ export class MrubyWriterConnector {
       return Failure.error("Error excepted while reading.", { cause: error });
     } finally {
       this.currentSubReader?.releaseLock();
-      await this.close();
+      if (!this.aborter?.signal.aborted) {
+        await this.close();
+      }
     }
 
     return Failure.error("Reader is canceled.");
@@ -149,7 +209,7 @@ export class MrubyWriterConnector {
     this.handleText(`\r\n> ${command}\r\n`);
     console.log("Send", { command });
 
-    return this.sendData(this.encoder.encode(command));
+    return this.sendData(this.encoder.encode(`${command}\r\n`));
   }
 
   async writeCode(
@@ -321,12 +381,10 @@ export class MrubyWriterConnector {
   }
 
   private detectEvent(text: string): Success<{ event: Event | null }> {
-    if (
-      text.includes("mrubyc-esp32: Please push Enter key x 2 to mrbwite mode")
-    ) {
+    if (this.target && text.match(enterWriteModeKeyword[this.target])) {
       return Success.value({ event: "AttemptToEnterWriteMode" });
     }
-    if (text.includes("mrubyc-esp32: End mrbwrite mode")) {
+    if (this.target && text.match(exitWriteModeKeyword[this.target])) {
       return Success.value({ event: "SuccessToExitWriteMode" });
     }
 
@@ -414,6 +472,8 @@ export class MrubyWriterConnector {
       return Success.value(null);
     } catch (error) {
       return Failure.error("Error excepted while writing.", { cause: error });
+    } finally {
+      writer.releaseLock();
     }
   }
 

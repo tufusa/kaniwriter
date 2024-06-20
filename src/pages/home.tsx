@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   Box,
-  Button,
   FormLabel,
   Radio,
   radioClasses,
@@ -18,6 +17,8 @@ import {
 import {
   Flag as FlagIcon,
   Usb as UsbIcon,
+  Edit as EditIcon,
+  UsbOff as UsbOffIcon,
   CheckCircleRounded as CheckCircleRoundedIcon,
   Check as CheckIcon,
   ErrorOutline as ErrorOutlineIcon,
@@ -30,6 +31,7 @@ import { useQuery } from "hooks/useQuery";
 import RBoard from "/images/Rboard.png";
 import ESP32 from "/images/ESP32.png";
 import { Log } from "components/log";
+import { ControlButton } from "components/ControlButton";
 
 const targets = [
   {
@@ -65,7 +67,6 @@ export const Home = () => {
       target,
       log: (message, params) => console.log(message, params),
       onListen: (buffer) => setLog([...buffer]),
-      useAnsi: true,
     })
   );
   const [command, setCommand] = useState("");
@@ -97,6 +98,15 @@ export const Home = () => {
     }
     await read();
   }, [connector, read]);
+
+  const disconnect = useCallback(async () => {
+    const res = await connector.disconnect();
+    if (res.isFailure()) {
+      alert(
+        `切断中にエラーが発生しました。\n${res.error}\ncause: ${res.error.cause}`
+      );
+    }
+  }, [connector]);
 
   const send = useCallback(
     async (text: string) => {
@@ -353,23 +363,34 @@ export const Home = () => {
             gap: "1rem",
           }}
         >
-          <Button onClick={connect} disabled={!target}>
-            接続 <UsbIcon />
-          </Button>
-          <Button
+          <ControlButton
+            label="接続"
+            icon={<UsbIcon />}
+            onClick={connect}
+            disabled={!target || connector.isConnected}
+          />
+          <ControlButton
+            label="書き込み"
+            icon={<EditIcon />}
             onClick={writeCode}
             disabled={
-              compileStatus.status !== "success" || !connector.writeMode
+              compileStatus.status !== "success" || !connector.isWriteMode
             }
-            sx={{
-              display: "flex",
-              gap: "0.3rem",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            書き込み <FlagIcon />
-          </Button>
+          />
+          <ControlButton
+            label="実行"
+            icon={<FlagIcon />}
+            onClick={() => send("execute")}
+            disabled={!connector.isWriteMode}
+            color="success"
+          />
+          <ControlButton
+            label="切断"
+            icon={<UsbOffIcon />}
+            onClick={disconnect}
+            disabled={!connector.isConnected}
+            color="danger"
+          />
         </Box>
         <Box
           sx={{
