@@ -361,7 +361,7 @@ export class MrubyWriterConnector {
 
   private handleText(text: string): Success<{ event: Event | null }> {
     const last_text = this.buffer.pop() ?? "";
-    const texts = (last_text + text).replace("\r\n", "\n").split("\n");
+    const texts = (last_text + text).replaceAll("\r\n", "\n").split("\n");
     const event = this.detectEvent(texts.join()).value.event;
     this.buffer.push(...texts);
     this.onListen?.(this.buffer);
