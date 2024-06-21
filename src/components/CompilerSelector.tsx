@@ -34,7 +34,7 @@ export const CompilerSelector = ({
   >
     {versions.map((version) => (
       <Option value={version} key={version}>
-        mruby/c {version}
+        mrbc {version}
       </Option>
     ))}
   </Select>
