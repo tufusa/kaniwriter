@@ -31,7 +31,6 @@ export const Code = ({ sourceCode, isOpen, setIsOpen }: CodeProps) => {
     >
       <Card
         sx={{
-          p: "0.5rem",
           borderRadius: "1rem 1rem 0 0",
           margin: "0 2rem",
         }}
@@ -39,7 +38,6 @@ export const Code = ({ sourceCode, isOpen, setIsOpen }: CodeProps) => {
         <Button
           sx={{
             height: "2rem",
-            p: "0.5rem",
           }}
           onClick={() => setIsOpen(!isOpen)}
         >
@@ -54,17 +52,15 @@ export const Code = ({ sourceCode, isOpen, setIsOpen }: CodeProps) => {
             sx={{
               display: "flex",
               justifyContent: "center",
-              width: "90%",
-              p: "1rem",
-
               maxWidth: "65rem",
               minWidth: "30rem",
+              maxHeight: "30rem",
+              overflow: "auto",
             }}
           >
             <div
               style={{
                 width: "100%",
-                overflow: "scroll",
               }}
               dangerouslySetInnerHTML={{ __html: code }}
             ></div>

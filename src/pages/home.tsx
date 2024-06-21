@@ -30,7 +30,7 @@ import { useQuery } from "hooks/useQuery";
 import RBoard from "/images/Rboard.png";
 import ESP32 from "/images/ESP32.png";
 import { Log } from "components/log";
-import { Code } from "components/code";
+import { Code } from "components/Code";
 
 const targets = [
   {
@@ -128,24 +128,6 @@ export const Home = () => {
     }
   }, [connector, code]);
 
-  // 送信したmruby/cのソースコードを取得
-  useEffect(() => {
-    const fetchCode = async () => {
-      const res = await fetch(
-        //後でリプレイスする
-        `https://ceres.epi.it.matsue-ct.ac.jp/compile/code/${id}`
-      ).catch(() => undefined);
-      if (!res?.ok) {
-        console.error("No source code found.");
-        return;
-      }
-      const json = await res.json();
-      const code = decodeURIComponent(atob(json.code));
-      setSourceCode(code);
-    };
-    fetchCode();
-  });
-
   useEffect(() => {
     const compile = async () => {
       setCompileStatus({ status: "idle" });
@@ -160,6 +142,11 @@ export const Home = () => {
         });
         return;
       }
+
+      // 送信したmruby/cのソースコードを取得
+      const res = await codeResponse.json();
+      const code = decodeURIComponent(atob(res.code));
+      setSourceCode(code);
 
       setCompileStatus({ status: "compile" });
 
