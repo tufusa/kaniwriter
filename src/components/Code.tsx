@@ -27,11 +27,12 @@ export const Code = ({ sourceCode, isOpen, setIsOpen }: CodeProps) => {
         minWidth: "30rem",
         maxWidth: "65rem",
         width: "100%",
+        mb: isOpen ? "2rem" : "0",
       }}
     >
       <Card
         sx={{
-          borderRadius: "1rem 1rem 0 0",
+          borderRadius: isOpen ? "1rem" : "1rem 1rem 0 0",
           margin: "0 2rem",
         }}
       >
