@@ -116,7 +116,7 @@ export const Home = () => {
 
   const writeCode = useCallback(async () => {
     if (!code) return;
-    const res = await connector.writeCode(code, { execute: true });
+    const res = await connector.writeCode(code);
     console.log(res);
     if (res.isFailure()) {
       alert(
