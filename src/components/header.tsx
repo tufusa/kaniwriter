@@ -1,5 +1,5 @@
 import { AppBar, Box, Link, Toolbar } from "@mui/material";
-import { Option, Select } from "@mui/joy";
+import { Button, Sheet } from "@mui/joy";
 import { GitHub, Translate } from "@mui/icons-material";
 import icon from "/images/logo.png";
 import { useTranslation } from "react-i18next";
@@ -23,8 +23,9 @@ export const Header = () => {
       position="static"
       id={"header"}
       sx={{
+        "--header-bg": "#ff3227",
         height: "4rem",
-        backgroundColor: "#ff3227",
+        backgroundColor: "var(--header-bg)",
         width: "100%",
         whiteSpace: "nowrap",
       }}
@@ -75,36 +76,6 @@ export const Header = () => {
             alignItems: "center",
           }}
         >
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              gap: "0.3rem",
-            }}
-          >
-            <Translate />
-            <Select
-              color="neutral"
-              sx={{ width: "8rem" }}
-              variant="soft"
-              defaultValue={
-                localStorage.getItem("locale") ?? i18n.resolvedLanguage
-              }
-              onChange={(_, value) => {
-                if (!value) return;
-
-                i18n.changeLanguage(value);
-                localStorage.setItem("locale", value);
-              }}
-            >
-              {languages.map(({ locale, name }) => (
-                <Option value={locale} key={locale}>
-                  {locale} {name}
-                </Option>
-              ))}
-            </Select>
-          </Box>
           <Link
             href={import.meta.env.VITE_BASE_URL}
             variant="body1"
@@ -117,6 +88,60 @@ export const Header = () => {
           >
             {t("参考資料")}
           </Link>
+          <Box
+            sx={{
+              display: "flex",
+              position: "relative",
+              "&:hover > div": {
+                opacity: 1,
+                visibility: "visible",
+              },
+            }}
+          >
+            <Translate fontSize="large" />
+            <Sheet
+              sx={{
+                p: "1rem",
+                m: "-1rem",
+                width: "7rem",
+                position: "absolute",
+                top: "calc(1.5rem + 50%)",
+                left: "calc(-3.5rem + 50%)",
+                zIndex: "1",
+                background: "transparent",
+                transition: "all 100ms ease-in-out",
+                opacity: 0,
+                visibility: "hidden",
+              }}
+            >
+              <Sheet
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  background: "white",
+                  boxShadow: "lg",
+                  borderRadius: "0.2rem",
+                }}
+              >
+                {languages.map(({ locale, name }) => (
+                  <Button
+                    variant="plain"
+                    onClick={() => i18n.changeLanguage(locale)}
+                    sx={{
+                      color: "black",
+                      transition: "all 100ms ease-in-out",
+                      ":hover": {
+                        background: "white",
+                        color: "var(--header-bg)",
+                      },
+                    }}
+                  >
+                    {name}
+                  </Button>
+                ))}
+              </Sheet>
+            </Sheet>
+          </Box>
           <Link
             href={`https://github.com/${
               import.meta.env.VITE_WRITER_REPOSITORY_PATH
