@@ -78,7 +78,7 @@ export const Home = () => {
         `${t("受信中にエラーが発生しました。")}\n${res.error}\ncause: ${res.error.cause}`
       );
     }
-  }, [connector]);
+  }, [t, connector]);
 
   const connect = useCallback(async () => {
     const res = await connector.connect(
@@ -90,7 +90,7 @@ export const Home = () => {
       return;
     }
     await read();
-  }, [connector, read]);
+  }, [t, connector, read]);
 
   const disconnect = useCallback(async () => {
     const res = await connector.disconnect();
@@ -99,7 +99,7 @@ export const Home = () => {
         `${t("切断中にエラーが発生しました。")}\n${res.error}\ncause: ${res.error.cause}`
       );
     }
-  }, [connector]);
+  }, [t, connector]);
 
   const send = useCallback(
     async (text: string) => {
@@ -111,7 +111,7 @@ export const Home = () => {
         );
       }
     },
-    [connector]
+    [t, connector]
   );
 
   const writeCode = useCallback(async () => {
@@ -123,7 +123,7 @@ export const Home = () => {
         `${t("書き込み中にエラーが発生しました。")}\n${res.error}\ncause: ${res.error.cause}`
       );
     }
-  }, [connector, code]);
+  }, [t, connector, code]);
 
   useEffect(() => {
     if (getVersionsStatus != "success") return;
@@ -155,11 +155,12 @@ export const Home = () => {
   }, [autoConnectMode, connector, read]);
 
   useEffect(() => {
+    console.log("called!");
     const locale = localStorage.getItem("locale");
     if (!locale) return;
 
     i18n.changeLanguage(locale);
-  }, []);
+  }, [i18n]);
 
   return (
     <Box
