@@ -3,7 +3,7 @@ import { Button, Sheet } from "@mui/joy";
 import { GitHub, Translate } from "@mui/icons-material";
 import icon from "/images/logo.png";
 import { useTranslation } from "react-i18next";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 
 export const Header = () => {
   const [t, i18n] = useTranslation();
@@ -16,6 +16,13 @@ export const Header = () => {
         }))
         .sort((lang1, lang2) => lang1.name.localeCompare(lang2.name)),
     [t, i18n]
+  );
+  const setLanguage = useCallback(
+    (locale: string) => {
+      i18n.changeLanguage(locale);
+      localStorage.setItem("locale", locale);
+    },
+    [i18n]
   );
 
   return (
@@ -126,7 +133,7 @@ export const Header = () => {
                 {languages.map(({ locale, name }) => (
                   <Button
                     variant="plain"
-                    onClick={() => i18n.changeLanguage(locale)}
+                    onClick={() => setLanguage(locale)}
                     sx={{
                       color: "black",
                       transition: "all 100ms ease-in-out",
