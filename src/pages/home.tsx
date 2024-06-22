@@ -154,6 +154,13 @@ export const Home = () => {
     autoConnect();
   }, [autoConnectMode, connector, read]);
 
+  useEffect(() => {
+    const locale = localStorage.getItem("locale");
+    if (!locale) return;
+
+    i18n.changeLanguage(locale);
+  }, []);
+
   return (
     <Box
       sx={{
