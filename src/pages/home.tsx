@@ -22,6 +22,7 @@ import { useQuery } from "hooks/useQuery";
 import RBoard from "/images/Rboard.png";
 import ESP32 from "/images/ESP32.png";
 import { Log } from "components/log";
+import { SourceCodeTab } from "components/SourceCodeTab";
 import { ControlButton } from "components/ControlButton";
 import { CompilerSelector } from "components/CompilerSelector";
 import { Version, useVersions } from "hooks/useVersions";
@@ -68,7 +69,7 @@ export const Home = () => {
   const [code, setCode] = useState<Uint8Array>();
   const [autoScroll, setAutoScroll] = useState(true);
   const [versions, getVersionsStatus] = useVersions();
-  const [compileStatus, compile] = useCompile(id, setCode);
+  const [compileStatus, sourceCode, compile] = useCompile(id, setCode);
 
   const read = useCallback(async () => {
     const res = await connector.startListen();
@@ -163,253 +164,256 @@ export const Home = () => {
   }, [i18n]);
 
   return (
-    <Box
-      sx={{
-        mb: "0.5rem",
-        display: "flex",
-        width: "100%",
-        minWidth: "30rem",
-        maxWidth: "65rem",
-        flexDirection: "row",
-        flexGrow: "1",
-        gap: "1rem",
-      }}
-    >
+    <>
       <Box
         sx={{
-          marginLeft: "2rem",
-          width: "15rem",
-          minWidth: "15rem",
+          mb: "0.5rem",
           display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: "1.5rem",
-        }}
-      >
-        <Sheet
-          variant="outlined"
-          sx={{
-            pt: "1rem",
-            pb: "0.5rem",
-            width: "100%",
-            boxSizing: "border-box",
-            borderRadius: "sm",
-            borderColor:
-              getVersionsStatus == "error" || compileStatus.status == "error"
-                ? "red"
-                : "lightgrey",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-            gap: "0.5rem",
-          }}
-        >
-          <Box sx={{ width: "calc(100% - 2rem)" }}>
-            <Typography
-              fontFamily={"'M PLUS Rounded 1c', sans-serif"}
-              variant="caption"
-              color="GrayText"
-            >
-              {t("コンパイラバージョン")}
-            </Typography>
-            <CompilerSelector
-              versions={versions.sort()}
-              defaultVersion="3.2.0"
-              disabled={getVersionsStatus != "success"}
-              onChange={(version) => compile(version)}
-              sx={{ width: "100%" }}
-            />
-          </Box>
-          <CompileStatusCard
-            status={
-              getVersionsStatus == "error" ? "error" : compileStatus.status
-            }
-            error={compileStatus.error}
-          />
-        </Sheet>
-
-        {/* マイコン選択 */}
-        <Box
-          sx={{
-            width: "100%",
-          }}
-        >
-          {!target && (
-            <Typography variant="body1" color="red">
-              {t("書き込みターゲットを選択してください。")}
-            </Typography>
-          )}
-          <RadioGroup
-            aria-label="platform"
-            defaultValue="Website"
-            overlay
-            name="platform"
-            sx={{
-              width: "100%",
-              gap: "1rem",
-              [`& .${radioClasses.checked}`]: {
-                [`& .${radioClasses.action}`]: {
-                  inset: -1,
-                  border: "3px solid",
-                  borderColor: "primary.500",
-                },
-              },
-              [`& .${radioClasses.radio}`]: {
-                display: "contents",
-                "& > svg": {
-                  zIndex: 2,
-                  position: "absolute",
-                  top: "-0.5rem",
-                  right: "-0.5rem",
-                  bgcolor: "background.surface",
-                  borderRadius: "50%",
-                },
-              },
-            }}
-          >
-            {targets.map((value, index) => (
-              <Sheet
-                key={index}
-                variant="outlined"
-                sx={{
-                  borderRadius: "md",
-                  boxShadow: "sm",
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: "1rem",
-                  p: "1rem",
-                }}
-              >
-                <Radio
-                  id={value.title}
-                  value={value.title}
-                  checkedIcon={<CheckCircleRoundedIcon />}
-                  checked={target === value.title}
-                  onChange={() => {
-                    setTarget(value.title);
-                    connector.setTarget(value.title);
-                    localStorage.setItem("target", value.title);
-                  }}
-                />
-                <FormLabel htmlFor={value.title}>
-                  <Typography fontFamily={"'M PLUS Rounded 1c', sans-serif"}>
-                    {value.title}
-                  </Typography>
-                </FormLabel>
-                <img
-                  src={value.image}
-                  alt={value.title}
-                  style={{
-                    aspectRatio: "1/1",
-                    width: "6rem",
-                    margin: "0 auto",
-                  }}
-                />
-              </Sheet>
-            ))}
-          </RadioGroup>
-        </Box>
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-          }}
-        >
-          <FormControlLabel
-            control={
-              <Checkbox
-                onChange={(ev) => {
-                  const checked = ev.currentTarget.checked;
-                  setAutoScroll(checked);
-                }}
-                checked={autoScroll}
-              />
-            }
-            label={t("自動スクロール")}
-            sx={{ color: "black" }}
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                onChange={(ev) => {
-                  const checked = ev.currentTarget.checked;
-                  setAutoConnectMode(checked);
-                  localStorage.setItem("autoConnect", `${checked}`);
-
-                  if (checked) window.location.reload();
-                }}
-                checked={autoConnectMode}
-              />
-            }
-            label={t("自動接続(Experimental)")}
-            sx={{ color: "black" }}
-          />
-        </Box>
-      </Box>
-      <Box
-        sx={{
-          marginRight: "2rem",
-          minWidth: "25rem",
-          display: "flex",
-          flexDirection: "column",
+          width: "100%",
+          minWidth: "30rem",
+          maxWidth: "65rem",
+          flexDirection: "row",
           flexGrow: "1",
           gap: "1rem",
         }}
       >
-        <Log log={log} autoScroll={autoScroll} />
         <Box
           sx={{
-            width: "100%",
+            marginLeft: "2rem",
+            width: "15rem",
+            minWidth: "15rem",
             display: "flex",
-            flexWrap: "wrap",
-            justifyContent: "right",
+            flexDirection: "column",
             alignItems: "center",
+            gap: "1.5rem",
+          }}
+        >
+          <Sheet
+            variant="outlined"
+            sx={{
+              pt: "1rem",
+              pb: "0.5rem",
+              width: "100%",
+              boxSizing: "border-box",
+              borderRadius: "sm",
+              borderColor:
+                getVersionsStatus == "error" || compileStatus.status == "error"
+                  ? "red"
+                  : "lightgrey",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              gap: "0.5rem",
+            }}
+          >
+            <Box sx={{ width: "calc(100% - 2rem)" }}>
+              <Typography
+                fontFamily={"'M PLUS Rounded 1c', sans-serif"}
+                variant="caption"
+                color="GrayText"
+              >
+                {t("コンパイラバージョン")}
+              </Typography>
+              <CompilerSelector
+                versions={versions.sort()}
+                defaultVersion="3.2.0"
+                disabled={getVersionsStatus != "success"}
+                onChange={(version) => compile(version)}
+                sx={{ width: "100%" }}
+              />
+            </Box>
+            <CompileStatusCard
+              status={
+                getVersionsStatus == "error" ? "error" : compileStatus.status
+              }
+              error={compileStatus.error}
+            />
+          </Sheet>
+
+          {/* マイコン選択 */}
+          <Box
+            sx={{
+              width: "100%",
+            }}
+          >
+            {!target && (
+              <Typography variant="body1" color="red">
+                {t("書き込みターゲットを選択してください。")}
+              </Typography>
+            )}
+            <RadioGroup
+              aria-label="platform"
+              defaultValue="Website"
+              overlay
+              name="platform"
+              sx={{
+                width: "100%",
+                gap: "1rem",
+                [`& .${radioClasses.checked}`]: {
+                  [`& .${radioClasses.action}`]: {
+                    inset: -1,
+                    border: "3px solid",
+                    borderColor: "primary.500",
+                  },
+                },
+                [`& .${radioClasses.radio}`]: {
+                  display: "contents",
+                  "& > svg": {
+                    zIndex: 2,
+                    position: "absolute",
+                    top: "-0.5rem",
+                    right: "-0.5rem",
+                    bgcolor: "background.surface",
+                    borderRadius: "50%",
+                  },
+                },
+              }}
+            >
+              {targets.map((value, index) => (
+                <Sheet
+                  key={index}
+                  variant="outlined"
+                  sx={{
+                    borderRadius: "md",
+                    boxShadow: "sm",
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: "1rem",
+                    p: "1rem",
+                  }}
+                >
+                  <Radio
+                    id={value.title}
+                    value={value.title}
+                    checkedIcon={<CheckCircleRoundedIcon />}
+                    checked={target === value.title}
+                    onChange={() => {
+                      setTarget(value.title);
+                      connector.setTarget(value.title);
+                      localStorage.setItem("target", value.title);
+                    }}
+                  />
+                  <FormLabel htmlFor={value.title}>
+                    <Typography fontFamily={"'M PLUS Rounded 1c', sans-serif"}>
+                      {value.title}
+                    </Typography>
+                  </FormLabel>
+                  <img
+                    src={value.image}
+                    alt={value.title}
+                    style={{
+                      aspectRatio: "1/1",
+                      width: "6rem",
+                      margin: "0 auto",
+                    }}
+                  />
+                </Sheet>
+              ))}
+            </RadioGroup>
+          </Box>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+            }}
+          >
+            <FormControlLabel
+              control={
+                <Checkbox
+                  onChange={(ev) => {
+                    const checked = ev.currentTarget.checked;
+                    setAutoScroll(checked);
+                  }}
+                  checked={autoScroll}
+                />
+              }
+              label={t("自動スクロール")}
+              sx={{ color: "black" }}
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  onChange={(ev) => {
+                    const checked = ev.currentTarget.checked;
+                    setAutoConnectMode(checked);
+                    localStorage.setItem("autoConnect", `${checked}`);
+
+                    if (checked) window.location.reload();
+                  }}
+                  checked={autoConnectMode}
+                />
+              }
+              label={t("自動接続(Experimental)")}
+              sx={{ color: "black" }}
+            />
+          </Box>
+        </Box>
+        <Box
+          sx={{
+            marginRight: "2rem",
+            minWidth: "25rem",
+            display: "flex",
+            flexDirection: "column",
+            flexGrow: "1",
             gap: "1rem",
           }}
         >
-          <ControlButton
-            label={t("接続")}
-            icon={<UsbIcon />}
-            onClick={connect}
-            disabled={!target || connector.isConnected}
-          />
-          <ControlButton
-            label={t("書き込み")}
-            icon={<EditIcon />}
-            onClick={writeCode}
-            disabled={
-              compileStatus.status !== "success" || !connector.isWriteMode
-            }
-          />
-          <ControlButton
-            label={t("実行")}
-            icon={<FlagIcon />}
-            onClick={() => send("execute")}
-            disabled={!connector.isWriteMode}
-            color="success"
-          />
-          <ControlButton
-            label={t("切断")}
-            icon={<UsbOffIcon />}
-            onClick={disconnect}
-            disabled={!connector.isConnected}
-            color="danger"
-          />
-        </Box>
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "right",
-          }}
-        >
-          <Input type="text" onChange={(e) => setCommand(e.target.value)} />
-          <Input type="submit" onClick={() => send(command)} value="Send" />
+          <Log log={log} autoScroll={autoScroll} />
+          <Box
+            sx={{
+              width: "100%",
+              display: "flex",
+              flexWrap: "wrap",
+              justifyContent: "right",
+              alignItems: "center",
+              gap: "1rem",
+            }}
+          >
+            <ControlButton
+              label={t("接続")}
+              icon={<UsbIcon />}
+              onClick={connect}
+              disabled={!target || connector.isConnected}
+            />
+            <ControlButton
+              label={t("書き込み")}
+              icon={<EditIcon />}
+              onClick={writeCode}
+              disabled={
+                compileStatus.status !== "success" || !connector.isWriteMode
+              }
+            />
+            <ControlButton
+              label={t("実行")}
+              icon={<FlagIcon />}
+              onClick={() => send("execute")}
+              disabled={!connector.isWriteMode}
+              color="success"
+            />
+            <ControlButton
+              label={t("切断")}
+              icon={<UsbOffIcon />}
+              onClick={disconnect}
+              disabled={!connector.isConnected}
+              color="danger"
+            />
+          </Box>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "right",
+            }}
+          >
+            <Input type="text" onChange={(e) => setCommand(e.target.value)} />
+            <Input type="submit" onClick={() => send(command)} value="Send" />
+          </Box>
         </Box>
       </Box>
-    </Box>
+      <SourceCodeTab sourceCode={sourceCode} />
+    </>
   );
 };

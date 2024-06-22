@@ -11,14 +11,20 @@ type CompileResponse = {
   binary: string;
   error: string;
 };
+type CodeResponse = {
+  code: string;
+};
 
 export const useCompile = (
   id: string | undefined,
   setCode: (code: Uint8Array) => void
-): [status: CompileStatus, compile: Compile] => {
+): [status: CompileStatus, sourceCode: string, compile: Compile] => {
   const [status, setStatus] = useState<CompileStatus>({
     status: "idle",
   });
+
+  // 送信したmruby/cのソースコード
+  const [sourceCode, setSourceCode] = useState<string>("");
 
   const compile = useCallback(
     async (version: Version) => {
@@ -42,6 +48,14 @@ export const useCompile = (
         });
         return;
       }
+
+      // レスポンスから、送信したmruby/cのソースコードを抽出
+      const codeResult = await codeResponse
+        .json()
+        .then((json) => json as CodeResponse);
+      setSourceCode(
+        new TextDecoder().decode(Base64.toByteArray(codeResult.code))
+      );
 
       setStatus({ status: "compile" });
 
@@ -72,5 +86,5 @@ export const useCompile = (
     [id, setCode]
   );
 
-  return [status, compile];
+  return [status, sourceCode, compile];
 };

@@ -20,5 +20,7 @@
   "コンパイル失敗": "Compilation failed",
   "RubyCity松江のロゴ": "RubyCity Matsue logo",
   "書き込みツール": "kaniwriter",
-  "参考資料": "Reference"
+  "参考資料": "Reference",
+  "ソースコードを表示": "Show source code",
+  "ソースコードを非表示": "Hide source code"
 }
