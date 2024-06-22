@@ -1,8 +1,11 @@
 import { AppBar, Box, Link, Toolbar } from "@mui/material";
 import { GitHub } from "@mui/icons-material";
 import icon from "/images/logo.png";
+import { useTranslation } from "react-i18next";
 
-export function Header() {
+export const Header = () => {
+  const [t, i18n] = useTranslation();
+
   return (
     <AppBar
       position="static"
@@ -33,7 +36,7 @@ export function Header() {
         >
           <img
             src={icon}
-            alt="RubyCity松江のロゴ"
+            alt={t("RubyCity松江のロゴ")}
             style={{
               margin: 0,
               padding: 0,
@@ -48,7 +51,7 @@ export function Header() {
             fontFamily="'M PLUS Rounded 1c', sans-serif"
             sx={{ ":hover": { color: "inherit" } }}
           >
-            書き込みツール
+            {t("書き込みツール")}
           </Link>
         </Box>
         <Box
@@ -70,7 +73,7 @@ export function Header() {
               ":hover": { color: "inherit" },
             }}
           >
-            参考資料
+            {t("参考資料")}
           </Link>
           <Link
             href={`https://github.com/${
@@ -91,4 +94,4 @@ export function Header() {
       </Toolbar>
     </AppBar>
   );
-}
+};

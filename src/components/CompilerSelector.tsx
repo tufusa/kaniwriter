@@ -1,6 +1,7 @@
 import { Select, Option } from "@mui/joy";
 import { SxProps } from "@mui/joy/styles/types";
 import { Version } from "hooks/useVersions";
+import { useTranslation } from "react-i18next";
 
 type Props = {
   versions: Version[];
@@ -16,26 +17,30 @@ export const CompilerSelector = ({
   disabled,
   onChange,
   sx,
-}: Props) => (
-  <Select
-    variant="soft"
-    placeholder="コンパイラを選択"
-    onChange={(_, value) => {
-      if (onChange && typeof value === "string") {
-        onChange(value);
-      }
-    }}
-    defaultValue={defaultVersion}
-    sx={{
-      pl: "1rem",
-      ...sx,
-    }}
-    disabled={disabled}
-  >
-    {versions.map((version) => (
-      <Option value={version} key={version}>
-        mrbc {version}
-      </Option>
-    ))}
-  </Select>
-);
+}: Props) => {
+  const [t] = useTranslation();
+
+  return (
+    <Select
+      variant="soft"
+      placeholder={t("コンパイラを選択")}
+      onChange={(_, value) => {
+        if (onChange && typeof value === "string") {
+          onChange(value);
+        }
+      }}
+      defaultValue={defaultVersion}
+      sx={{
+        pl: "1rem",
+        ...sx,
+      }}
+      disabled={disabled}
+    >
+      {versions.map((version) => (
+        <Option value={version} key={version}>
+          mrbc {version}
+        </Option>
+      ))}
+    </Select>
+  );
+};
