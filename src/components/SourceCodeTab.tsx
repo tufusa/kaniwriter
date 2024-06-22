@@ -25,9 +25,9 @@ export const SourceCodeTab = ({ sourceCode }: CodeProps) => {
   return (
     <Box
       sx={{
-        minWidth: "30rem",
+        minWidth: "45rem",
         maxWidth: "65rem",
-        width: "100%",
+        width: "max(100vw, 100dvw, 45rem)",
         mb: isOpen ? "2rem" : "0",
       }}
     >
@@ -57,8 +57,6 @@ export const SourceCodeTab = ({ sourceCode }: CodeProps) => {
             sx={{
               display: "flex",
               justifyContent: "center",
-              maxWidth: "65rem",
-              minWidth: "30rem",
               maxHeight: "30rem",
               overflow: "auto",
             }}
@@ -66,6 +64,7 @@ export const SourceCodeTab = ({ sourceCode }: CodeProps) => {
             <div
               style={{
                 width: "100%",
+                overflowX: "scroll",
               }}
               dangerouslySetInnerHTML={{ __html: html }}
             ></div>
