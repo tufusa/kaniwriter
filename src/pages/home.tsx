@@ -28,6 +28,7 @@ import { CompilerSelector } from "components/CompilerSelector";
 import { Version, useVersions } from "hooks/useVersions";
 import { useCompile } from "hooks/useCompile";
 import { CompileStatusCard } from "components/CompileStatusCard";
+import { useTranslation } from "react-i18next";
 
 const targets = [
   {
@@ -43,6 +44,7 @@ const targets = [
 const defaultCompilderVersion = "3.2.0" satisfies Version;
 
 export const Home = () => {
+  const [t, i18n] = useTranslation("ns1");
   const query = useQuery();
   const id = query.get("id") ?? undefined;
 
@@ -74,31 +76,31 @@ export const Home = () => {
     console.log(res);
     if (res.isFailure()) {
       alert(
-        `受信中にエラーが発生しました。\n${res.error}\ncause: ${res.error.cause}`
+        `${t("受信中にエラーが発生しました。")}\n${res.error}\ncause: ${res.error.cause}`
       );
     }
-  }, [connector]);
+  }, [t, connector]);
 
   const connect = useCallback(async () => {
     const res = await connector.connect(
       async () => await navigator.serial.requestPort()
     );
     if (res.isFailure()) {
-      alert(`ポートを取得できませんでした。\n${res.error}`);
+      alert(`${t("ポートを取得できませんでした。")}\n${res.error}`);
       console.log(res);
       return;
     }
     await read();
-  }, [connector, read]);
+  }, [t, connector, read]);
 
   const disconnect = useCallback(async () => {
     const res = await connector.disconnect();
     if (res.isFailure()) {
       alert(
-        `切断中にエラーが発生しました。\n${res.error}\ncause: ${res.error.cause}`
+        `${t("切断中にエラーが発生しました。")}\n${res.error}\ncause: ${res.error.cause}`
       );
     }
-  }, [connector]);
+  }, [t, connector]);
 
   const send = useCallback(
     async (text: string) => {
@@ -106,23 +108,23 @@ export const Home = () => {
       console.log(res);
       if (res.isFailure()) {
         alert(
-          `送信中にエラーが発生しました。\n${res.error}\ncause: ${res.error.cause}`
+          `${t("送信中にエラーが発生しました。")}\n${res.error}\ncause: ${res.error.cause}`
         );
       }
     },
-    [connector]
+    [t, connector]
   );
 
   const writeCode = useCallback(async () => {
     if (!code) return;
-    const res = await connector.writeCode(code, { execute: true });
+    const res = await connector.writeCode(code);
     console.log(res);
     if (res.isFailure()) {
       alert(
-        `書き込み中にエラーが発生しました。\n${res.error}\ncause: ${res.error.cause}`
+        `${t("書き込み中にエラーが発生しました。")}\n${res.error}\ncause: ${res.error.cause}`
       );
     }
-  }, [connector, code]);
+  }, [t, connector, code]);
 
   useEffect(() => {
     if (getVersionsStatus != "success") return;
@@ -152,6 +154,14 @@ export const Home = () => {
 
     autoConnect();
   }, [autoConnectMode, connector, read]);
+
+  useEffect(() => {
+    console.log("called!");
+    const locale = localStorage.getItem("locale");
+    if (!locale) return;
+
+    i18n.changeLanguage(locale);
+  }, [i18n]);
 
   return (
     <>
@@ -203,7 +213,7 @@ export const Home = () => {
                 variant="caption"
                 color="GrayText"
               >
-                コンパイラバージョン
+                {t("コンパイラバージョン")}
               </Typography>
               <CompilerSelector
                 versions={versions.sort()}
@@ -229,7 +239,7 @@ export const Home = () => {
           >
             {!target && (
               <Typography variant="body1" color="red">
-                書き込みターゲットを選択してください。
+                {t("書き込みターゲットを選択してください。")}
               </Typography>
             )}
             <RadioGroup
@@ -320,7 +330,7 @@ export const Home = () => {
                   checked={autoScroll}
                 />
               }
-              label="自動スクロール"
+              label={t("自動スクロール")}
               sx={{ color: "black" }}
             />
             <FormControlLabel
@@ -336,7 +346,7 @@ export const Home = () => {
                   checked={autoConnectMode}
                 />
               }
-              label="自動接続(Experimental)"
+              label={t("自動接続(Experimental)")}
               sx={{ color: "black" }}
             />
           </Box>
@@ -363,13 +373,13 @@ export const Home = () => {
             }}
           >
             <ControlButton
-              label="接続"
+              label={t("接続")}
               icon={<UsbIcon />}
               onClick={connect}
               disabled={!target || connector.isConnected}
             />
             <ControlButton
-              label="書き込み"
+              label={t("書き込み")}
               icon={<EditIcon />}
               onClick={writeCode}
               disabled={
@@ -377,14 +387,14 @@ export const Home = () => {
               }
             />
             <ControlButton
-              label="実行"
+              label={t("実行")}
               icon={<FlagIcon />}
               onClick={() => send("execute")}
               disabled={!connector.isWriteMode}
               color="success"
             />
             <ControlButton
-              label="切断"
+              label={t("切断")}
               icon={<UsbOffIcon />}
               onClick={disconnect}
               disabled={!connector.isConnected}

@@ -1,5 +1,5 @@
-import { Box, Card } from "@mui/joy";
-import { Button, Typography } from "@mui/material";
+import { Box, Card, Button, Typography } from "@mui/joy";
+import { t } from "i18next";
 import { useEffect, useState } from "react";
 import { codeToHtml } from "shiki";
 interface CodeProps {
@@ -40,10 +40,14 @@ export const Code = ({ sourceCode }: CodeProps) => {
           sx={{
             height: "2rem",
           }}
+          variant="plain"
           onClick={() => setIsOpen(!isOpen)}
         >
-          <Typography fontFamily={"'M PLUS Rounded 1c', sans-serif"}>
-            {isOpen ? "ソースコードを非表示" : "ソースコードを表示"}
+          <Typography
+            fontFamily={"'M PLUS Rounded 1c', sans-serif"}
+            color="primary"
+          >
+            {isOpen ? t("ソースコードを非表示") : t("ソースコードを表示")}
           </Typography>
         </Button>
 
