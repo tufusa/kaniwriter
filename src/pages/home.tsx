@@ -1,28 +1,20 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   Box,
-  Button,
   FormLabel,
   Radio,
   radioClasses,
   RadioGroup,
   Sheet,
 } from "@mui/joy";
-import {
-  Checkbox,
-  CircularProgress,
-  FormControlLabel,
-  Input,
-  Typography,
-} from "@mui/material";
+import { Checkbox, FormControlLabel, Input, Typography } from "@mui/material";
 import {
   Flag as FlagIcon,
   Usb as UsbIcon,
+  Edit as EditIcon,
+  UsbOff as UsbOffIcon,
   CheckCircleRounded as CheckCircleRoundedIcon,
-  Check as CheckIcon,
-  ErrorOutline as ErrorOutlineIcon,
 } from "@mui/icons-material";
-import Base64 from "base64-js";
 
 import { MrubyWriterConnector, Target } from "libs/mrubyWriterConnector";
 import { isTarget } from "libs/utility";
@@ -31,6 +23,11 @@ import RBoard from "/images/Rboard.png";
 import ESP32 from "/images/ESP32.png";
 import { Log } from "components/log";
 import { Code } from "components/Code";
+import { ControlButton } from "components/ControlButton";
+import { CompilerSelector } from "components/CompilerSelector";
+import { Version, useVersions } from "hooks/useVersions";
+import { useCompile } from "hooks/useCompile";
+import { CompileStatusCard } from "components/CompileStatusCard";
 
 const targets = [
   {
@@ -43,14 +40,11 @@ const targets = [
   },
 ] as const satisfies readonly { title: Target; image: string }[];
 
-type CompileStatus = {
-  status: "idle" | "compile" | "success" | "error";
-  error?: string;
-};
+const defaultCompilderVersion = "3.2.0" satisfies Version;
 
 export const Home = () => {
   const query = useQuery();
-  const id = query.get("id");
+  const id = query.get("id") ?? undefined;
 
   const targetItem = localStorage.getItem("target");
   const [target, setTarget] = useState<Target | undefined>(
@@ -61,26 +55,19 @@ export const Home = () => {
     autoConnectItem === "true"
   );
 
-  // 送信したmruby/cのソースコード
-  const [sourceCode, setSourceCode] = useState<string>("");
-  // 送信したmruby/cのソースコードを表示するかどうか
-  const [isOpen, setIsOpen] = useState(false);
-
   const [connector] = useState<MrubyWriterConnector>(
     new MrubyWriterConnector({
       target,
       log: (message, params) => console.log(message, params),
       onListen: (buffer) => setLog([...buffer]),
-      useAnsi: true,
     })
   );
   const [command, setCommand] = useState("");
   const [log, setLog] = useState<string[]>([]);
   const [code, setCode] = useState<Uint8Array>();
-  const [compileStatus, setCompileStatus] = useState<CompileStatus>({
-    status: "idle",
-  });
   const [autoScroll, setAutoScroll] = useState(true);
+  const [versions, getVersionsStatus] = useVersions();
+  const [compileStatus, sourceCode, compile] = useCompile(id, setCode);
 
   const read = useCallback(async () => {
     const res = await connector.startListen();
@@ -103,6 +90,15 @@ export const Home = () => {
     }
     await read();
   }, [connector, read]);
+
+  const disconnect = useCallback(async () => {
+    const res = await connector.disconnect();
+    if (res.isFailure()) {
+      alert(
+        `切断中にエラーが発生しました。\n${res.error}\ncause: ${res.error.cause}`
+      );
+    }
+  }, [connector]);
 
   const send = useCallback(
     async (text: string) => {
@@ -129,51 +125,11 @@ export const Home = () => {
   }, [connector, code]);
 
   useEffect(() => {
-    const compile = async () => {
-      setCompileStatus({ status: "idle" });
+    if (getVersionsStatus != "success") return;
+    if (!versions.includes(defaultCompilderVersion)) return;
 
-      const codeResponse = await fetch(
-        `${import.meta.env.VITE_COMPILER_URL}/code/${id}`
-      ).catch(() => undefined);
-      if (!codeResponse?.ok) {
-        setCompileStatus({
-          status: "error",
-          error: "No source code found.",
-        });
-        return;
-      }
-
-      // 送信したmruby/cのソースコードを取得
-      const res = await codeResponse.json();
-      const code = decodeURIComponent(atob(res.code));
-      setSourceCode(code);
-
-      setCompileStatus({ status: "compile" });
-
-      const compileResponse = await fetch(
-        `${import.meta.env.VITE_COMPILER_URL}/code/${id}/compile`,
-        { method: "POST" }
-      ).catch(() => undefined);
-      if (!compileResponse?.ok) {
-        setCompileStatus({ status: "error", error: "Compile failed." });
-        return;
-      }
-
-      const compileResult = (await compileResponse.json()) as {
-        binary: string;
-        error: string;
-      };
-      if (compileResult.error !== "") {
-        setCompileStatus({ status: "error", error: "Compile failed." });
-        return;
-      }
-
-      setCode(Base64.toByteArray(compileResult.binary));
-      setCompileStatus({ status: "success" });
-    };
-
-    compile();
-  }, [id]);
+    compile(defaultCompilderVersion);
+  }, [compile, versions, getVersionsStatus]);
 
   useEffect(() => {
     if (!autoConnectMode) return;
@@ -219,10 +175,51 @@ export const Home = () => {
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            gap: "2rem",
+            gap: "1.5rem",
           }}
         >
-          <CompileStatusCard status={compileStatus} />
+          <Sheet
+            variant="outlined"
+            sx={{
+              pt: "1rem",
+              pb: "0.5rem",
+              width: "100%",
+              boxSizing: "border-box",
+              borderRadius: "sm",
+              borderColor:
+                getVersionsStatus == "error" || compileStatus.status == "error"
+                  ? "red"
+                  : "lightgrey",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              gap: "0.5rem",
+            }}
+          >
+            <Box sx={{ width: "calc(100% - 2rem)" }}>
+              <Typography
+                fontFamily={"'M PLUS Rounded 1c', sans-serif"}
+                variant="caption"
+                color="GrayText"
+              >
+                コンパイラバージョン
+              </Typography>
+              <CompilerSelector
+                versions={versions.sort()}
+                defaultVersion="3.2.0"
+                disabled={getVersionsStatus != "success"}
+                onChange={(version) => compile(version)}
+                sx={{ width: "100%" }}
+              />
+            </Box>
+            <CompileStatusCard
+              status={
+                getVersionsStatus == "error" ? "error" : compileStatus.status
+              }
+              error={compileStatus.error}
+            />
+          </Sheet>
 
           {/* マイコン選択 */}
           <Box
@@ -365,23 +362,34 @@ export const Home = () => {
               gap: "1rem",
             }}
           >
-            <Button onClick={connect} disabled={!target}>
-              接続 <UsbIcon />
-            </Button>
-            <Button
+            <ControlButton
+              label="接続"
+              icon={<UsbIcon />}
+              onClick={connect}
+              disabled={!target || connector.isConnected}
+            />
+            <ControlButton
+              label="書き込み"
+              icon={<EditIcon />}
               onClick={writeCode}
               disabled={
-                compileStatus.status !== "success" || !connector.writeMode
+                compileStatus.status !== "success" || !connector.isWriteMode
               }
-              sx={{
-                display: "flex",
-                gap: "0.3rem",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              書き込み <FlagIcon />
-            </Button>
+            />
+            <ControlButton
+              label="実行"
+              icon={<FlagIcon />}
+              onClick={() => send("execute")}
+              disabled={!connector.isWriteMode}
+              color="success"
+            />
+            <ControlButton
+              label="切断"
+              icon={<UsbOffIcon />}
+              onClick={disconnect}
+              disabled={!connector.isConnected}
+              color="danger"
+            />
           </Box>
           <Box
             sx={{
@@ -395,59 +403,7 @@ export const Home = () => {
           </Box>
         </Box>
       </Box>
-      <Code sourceCode={sourceCode} isOpen={isOpen} setIsOpen={setIsOpen} />
+      <Code sourceCode={sourceCode} />
     </>
-  );
-};
-
-const CompileStatusCard = (props: { status: CompileStatus }) => {
-  const { status, error } = props.status;
-
-  return (
-    <Sheet
-      variant="outlined"
-      color="neutral"
-      sx={{
-        p: "0.5rem 1.5rem",
-        width: "100%",
-        boxSizing: "border-box",
-        borderRadius: "sm",
-        borderColor: status == "error" ? "red" : "lightgrey",
-        display: "flex",
-        flexWrap: "wrap",
-        flexDirection: "row",
-        justifyContent: "center",
-        alignItems: "center",
-        fontFamily: "'M PLUS Rounded 1c', sans-serif",
-      }}
-    >
-      {status === "idle" && (
-        <>
-          コンパイル待機中
-          <CircularProgress size="1.5rem" sx={{ ml: "1rem" }} />
-        </>
-      )}
-      {status === "compile" && (
-        <>
-          コンパイル中
-          <CircularProgress size="1.5rem" sx={{ ml: "1rem" }} />
-        </>
-      )}
-      {status === "success" && (
-        <>
-          コンパイル完了
-          <CheckIcon color="success" />
-        </>
-      )}
-      {status === "error" && (
-        <>
-          コンパイル失敗
-          <ErrorOutlineIcon color="error" />
-          <Box textAlign="center">
-            <code>{error}</code>
-          </Box>
-        </>
-      )}
-    </Sheet>
   );
 };

@@ -1,18 +1,18 @@
 {
-  "name": "kanicon-writer-front",
+  "name": "kaniwriter",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "build:ceres": "tsc && vite build --mode ceres",
+    "build:ceres": "tsc && NODE_OPTIONS=--max-old-space-size=4096 vite build --mode ceres",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "format": "eslint src --fix && prettier --write \"src/**/*.{js,jsx,ts,tsx,json,md}\"",
     "prettier": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,md}\""
   },
-  "packageManager": "pnpm@9.3.0",
+  "packageManager": "pnpm@9.4.0",
   "dependencies": {
     "@emotion/react": "^11.11.0",
     "@emotion/styled": "^11.11.0",

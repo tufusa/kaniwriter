@@ -4,20 +4,20 @@ import { useEffect, useState } from "react";
 import { codeToHtml } from "shiki";
 interface CodeProps {
   sourceCode: string;
-  isOpen: boolean;
-  setIsOpen: (isOpen: boolean) => void;
 }
 
 // 送信したソースコードを表示するページ下部のコンポーネント
-export const Code = ({ sourceCode, isOpen, setIsOpen }: CodeProps) => {
-  const [code, setCode] = useState<string>(sourceCode);
+export const Code = ({ sourceCode }: CodeProps) => {
+  const [html, setHtml] = useState<string>("");
+  // 送信したmruby/cのソースコードを表示するかどうか
+  const [isOpen, setIsOpen] = useState(false);
   useEffect(() => {
     async function convertCodeToHtml() {
       const html = await codeToHtml(sourceCode, {
         lang: "ruby",
         theme: "github-light",
       });
-      setCode(html);
+      setHtml(html);
     }
     convertCodeToHtml();
   }, [sourceCode]);
@@ -42,7 +42,6 @@ export const Code = ({ sourceCode, isOpen, setIsOpen }: CodeProps) => {
           }}
           onClick={() => setIsOpen(!isOpen)}
         >
-          <img src="" />
           <Typography fontFamily={"'M PLUS Rounded 1c', sans-serif"}>
             {isOpen ? "ソースコードを非表示" : "ソースコードを表示"}
           </Typography>
@@ -63,7 +62,7 @@ export const Code = ({ sourceCode, isOpen, setIsOpen }: CodeProps) => {
               style={{
                 width: "100%",
               }}
-              dangerouslySetInnerHTML={{ __html: code }}
+              dangerouslySetInnerHTML={{ __html: html }}
             ></div>
           </Box>
         )}
