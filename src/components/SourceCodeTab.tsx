@@ -1,16 +1,17 @@
 import { Box, Card, Button, Typography } from "@mui/joy";
-import { t } from "i18next";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { codeToHtml } from "shiki";
 interface CodeProps {
   sourceCode: string;
 }
 
 // 送信したソースコードを表示するページ下部のコンポーネント
-export const Code = ({ sourceCode }: CodeProps) => {
+export const SourceCodeTab = ({ sourceCode }: CodeProps) => {
   const [html, setHtml] = useState<string>("");
   // 送信したmruby/cのソースコードを表示するかどうか
   const [isOpen, setIsOpen] = useState(false);
+  const [t] = useTranslation();
   useEffect(() => {
     async function convertCodeToHtml() {
       const html = await codeToHtml(sourceCode, {

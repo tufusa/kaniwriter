@@ -22,7 +22,7 @@ import { useQuery } from "hooks/useQuery";
 import RBoard from "/images/Rboard.png";
 import ESP32 from "/images/ESP32.png";
 import { Log } from "components/log";
-import { Code } from "components/Code";
+import { SourceCodeTab } from "components/SourceCodeTab";
 import { ControlButton } from "components/ControlButton";
 import { CompilerSelector } from "components/CompilerSelector";
 import { Version, useVersions } from "hooks/useVersions";
@@ -413,7 +413,7 @@ export const Home = () => {
           </Box>
         </Box>
       </Box>
-      <Code sourceCode={sourceCode} />
+      <SourceCodeTab sourceCode={sourceCode} />
     </>
   );
 };
