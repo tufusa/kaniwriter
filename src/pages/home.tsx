@@ -104,7 +104,7 @@ export const Home = () => {
 
   const send = useCallback(
     async (text: string) => {
-      const res = await connector.sendCommand(text);
+      const res = await connector.sendCommand(text, { force: true });
       console.log(res);
       if (res.isFailure()) {
         alert(
