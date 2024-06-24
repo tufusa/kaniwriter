@@ -196,11 +196,14 @@ export class MrubyWriterConnector {
     return Failure.error("Reader is canceled.");
   }
 
-  async sendCommand(command: string): Promise<Result<string, Error>> {
+  async sendCommand(
+    command: string,
+    option?: { force: boolean }
+  ): Promise<Result<string, Error>> {
     if (!this.port) {
       return Failure.error("No port.");
     }
-    if (!this._writeMode) {
+    if (!option?.force && !this._writeMode) {
       return Failure.error("Not write mode now.");
     }
 
