@@ -89,6 +89,7 @@ export const Header = () => {
             underline="none"
             color="inherit"
             fontFamily="'M PLUS Rounded 1c', sans-serif"
+            target="_blank"
             sx={{
               ":hover": { color: "inherit" },
             }}
