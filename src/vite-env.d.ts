@@ -7,6 +7,6 @@ interface ImportMetaEnv {
   readonly VITE_REFERENCE_URL: string;
 }
 
-interface ImpoerMeta {
+interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
