@@ -84,7 +84,7 @@ export const Header = () => {
           }}
         >
           <Link
-            href={import.meta.env.VITE_BASE_URL}
+            href={import.meta.env.VITE_REFERENCE_URL}
             variant="body1"
             underline="none"
             color="inherit"
