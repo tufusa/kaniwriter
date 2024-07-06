@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { createHighlighterCore } from "shiki";
 import getWasm from "shiki/wasm";
-import githubLight from "shiki/themes/github-light.mjs"
+import githubLight from "shiki/themes/github-light.mjs";
 import ruby from "shiki/langs/ruby.mjs";
 interface CodeProps {
   sourceCode: string;
@@ -29,7 +29,6 @@ export const SourceCodeTab = ({ sourceCode }: CodeProps) => {
     });
     setHtml(html);
   }
-
 
   useEffect(() => {
     convertCodeToHtml();
