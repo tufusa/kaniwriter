@@ -29,6 +29,7 @@ import { Version, useVersions } from "hooks/useVersions";
 import { useCompile } from "hooks/useCompile";
 import { CompileStatusCard } from "components/CompileStatusCard";
 import { useTranslation } from "react-i18next";
+import { UnsupportedBrowserModal } from "components/UnsupportedBrowserModal";
 
 const targets = [
   {
@@ -70,6 +71,9 @@ export const Home = () => {
   const [autoScroll, setAutoScroll] = useState(true);
   const [versions, getVersionsStatus] = useVersions();
   const [compileStatus, sourceCode, compile] = useCompile(id, setCode);
+
+  // 対応するブラウザかの判定(対応してればtrue)
+  const [supported, setsupported] = useState(false);
 
   const read = useCallback(async () => {
     const res = await connector.startListen();
@@ -163,8 +167,14 @@ export const Home = () => {
     i18n.changeLanguage(locale);
   }, [i18n]);
 
+  // WebSerialAPIに対応するブラウザかどうかを確認する
+  useEffect(() => {
+    setsupported(("serial" in navigator));
+  }, [])
+
   return (
     <>
+      {!supported && <UnsupportedBrowserModal />}
       <Box
         sx={{
           mb: "0.5rem",
