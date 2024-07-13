@@ -16,7 +16,7 @@ export const SourceCodeTab = ({ sourceCode }: CodeProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [t] = useTranslation();
 
-  // ソースコードをシンタックスハイライト付きのHMTLにする
+  // ソースコードをシンタックスハイライト付きのHTMLにする
   async function convertCodeToHtml() {
     const highlighter = await createHighlighterCore({
       themes: [githubLight],
