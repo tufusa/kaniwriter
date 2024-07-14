@@ -5,6 +5,7 @@ import { createHighlighterCore, HighlighterCore } from "shiki";
 import getWasm from "shiki/wasm";
 import githubLight from "shiki/themes/github-light.mjs";
 import ruby from "shiki/langs/ruby.mjs";
+
 interface CodeProps {
   sourceCode: string;
 }
@@ -26,22 +27,26 @@ export const SourceCodeTab = ({ sourceCode }: CodeProps) => {
     });
     setHighlighter(highlighter);
   }
-  // ソースコードをシンタックスハイライト付きのHTMLに変換
-  async function convertCodeToHtml() {
-    if (!highlighter) return;
-    const html = highlighter.codeToHtml(sourceCode, {
-      lang: "ruby",
-      theme: "github-light",
-    });
-    setHtml(html);
-  }
-  
+
+  // 初回のみハイライターの初期化
   useEffect(() => {
-    if(!highlighter) {
-      createHighlighter();
+    createHighlighter();
+  }, []);
+
+  // ソースコードをシンタックスハイライト付きのHTMLに変換
+  useEffect(() => {
+    if (highlighter) {
+      const convertCodeToHtml = async () => {
+        const html = highlighter.codeToHtml(sourceCode, {
+          lang: "ruby",
+          theme: "github-light",
+        });
+        setHtml(html);
+      };
+      convertCodeToHtml();
     }
-    convertCodeToHtml();
-  }, [sourceCode]);
+  }, [sourceCode, highlighter]);
+
   return (
     <Box
       sx={{
