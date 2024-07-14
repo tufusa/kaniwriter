@@ -1,37 +1,18 @@
 import { Box, Card, Button, Typography } from "@mui/joy";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { createHighlighterCore, HighlighterCore } from "shiki";
-import getWasm from "shiki/wasm";
-import githubLight from "shiki/themes/github-light.mjs";
-import ruby from "shiki/langs/ruby.mjs";
+import { useHighlighter } from "hooks/useHighlighter";
 
 interface CodeProps {
   sourceCode: string;
 }
 
-// 送信したソースコードを表示するページ下部のコンポーネント
 export const SourceCodeTab = ({ sourceCode }: CodeProps) => {
   const [html, setHtml] = useState<string>("");
   // 送信したmruby/cのソースコードを表示するかどうか
   const [isOpen, setIsOpen] = useState(false);
   const [t] = useTranslation();
-  const [highlighter, setHighlighter] = useState<HighlighterCore>();
-  
-  // シンタックスハイライトの初期化
-  async function createHighlighter() {
-    const highlighter = await createHighlighterCore({
-      themes: [githubLight],
-      langs: [ruby],
-      loadWasm: getWasm,
-    });
-    setHighlighter(highlighter);
-  }
-
-  // 初回のみハイライターの初期化
-  useEffect(() => {
-    createHighlighter();
-  }, []);
+  const highlighter = useHighlighter();
 
   // ソースコードをシンタックスハイライト付きのHTMLに変換
   useEffect(() => {
