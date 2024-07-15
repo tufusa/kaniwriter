@@ -16,7 +16,6 @@ export const useHighlighter = () => {
         langs: [ruby],
         loadWasm: getWasm,
       });
-      await new Promise((resolve) => setTimeout(resolve, 5000));
       setHighlighter(highlighter);
     };
     createHighlighter();
