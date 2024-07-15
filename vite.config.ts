@@ -19,5 +19,17 @@ export default defineConfig(({ mode }) => {
         hooks: path.resolve(__dirname, "src/hooks"),
       },
     },
+    build: {
+     rollupOptions: {
+        output: {
+          manualChunks: {
+            shiki: ['shiki'],
+            shiki_theme: ['shiki/themes/github-light.mjs'],
+            shiki_lang: ['shiki/langs/ruby.mjs'],
+            shiki_wasm: ['shiki/wasm'],
+          },
+        },
+      }, 
+    }
   };
 });

@@ -1,27 +1,29 @@
 import { Box, Card, Button, Typography } from "@mui/joy";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { codeToHtml } from "shiki";
+import { useHighlighter } from "hooks/useHighlighter";
+
 interface CodeProps {
   sourceCode: string;
 }
 
-// 送信したソースコードを表示するページ下部のコンポーネント
 export const SourceCodeTab = ({ sourceCode }: CodeProps) => {
   const [html, setHtml] = useState<string>("");
   // 送信したmruby/cのソースコードを表示するかどうか
   const [isOpen, setIsOpen] = useState(false);
   const [t] = useTranslation();
+  const highlighter = useHighlighter();
+
+  // ソースコードをシンタックスハイライト付きのHTMLに変換
   useEffect(() => {
-    async function convertCodeToHtml() {
-      const html = await codeToHtml(sourceCode, {
-        lang: "ruby",
-        theme: "github-light",
-      });
-      setHtml(html);
-    }
-    convertCodeToHtml();
-  }, [sourceCode]);
+    if (!highlighter) return;
+    const html = highlighter.codeToHtml(sourceCode, {
+      lang: "ruby",
+      theme: "github-light",
+    });
+    setHtml(html);
+  }, [sourceCode, highlighter]);
+
   return (
     <Box
       sx={{
