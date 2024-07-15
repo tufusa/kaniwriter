@@ -16,16 +16,12 @@ export const SourceCodeTab = ({ sourceCode }: CodeProps) => {
 
   // ソースコードをシンタックスハイライト付きのHTMLに変換
   useEffect(() => {
-    if (highlighter) {
-      const convertCodeToHtml = () => {
-        const html = highlighter.codeToHtml(sourceCode, {
-          lang: "ruby",
-          theme: "github-light",
-        });
-        setHtml(html);
-      };
-      convertCodeToHtml();
-    }
+    if (!highlighter) return;
+    const html = highlighter.codeToHtml(sourceCode, {
+      lang: "ruby",
+      theme: "github-light",
+    });
+    setHtml(html);
   }, [sourceCode, highlighter]);
 
   return (
