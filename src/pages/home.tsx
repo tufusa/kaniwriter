@@ -41,8 +41,6 @@ const targets = [
   },
 ] as const satisfies readonly { title: Target; image: string }[];
 
-const defaultCompilerVersion = "3.2.0" satisfies Version;
-
 export const Home = () => {
   const [t, i18n] = useTranslation("ns1");
   const query = useQuery();
@@ -68,6 +66,7 @@ export const Home = () => {
   const [log, setLog] = useState<string[]>([]);
   const [code, setCode] = useState<Uint8Array>();
   const [autoScroll, setAutoScroll] = useState(true);
+  const [version, setVersion] = useState<Version | undefined>();
   const [versions, getVersionsStatus] = useVersions();
   const [compileStatus, sourceCode, compile] = useCompile(id, setCode);
 
@@ -126,12 +125,25 @@ export const Home = () => {
     }
   }, [t, connector, code]);
 
+  const onChangeVersion = useCallback(
+    (version: Version) => {
+      localStorage.setItem("compilerVersion", version);
+      setVersion(version);
+      compile(version);
+    },
+    [compile]
+  );
+
   useEffect(() => {
     if (getVersionsStatus != "success") return;
-    if (!versions.includes(defaultCompilerVersion)) return;
 
-    compile(defaultCompilerVersion);
-  }, [compile, versions, getVersionsStatus]);
+    const version =
+      localStorage.getItem("compilerVersion") ||
+      import.meta.env.VITE_COMPILER_VERSION_FALLBACK;
+    if (!versions.includes(version)) return;
+
+    onChangeVersion(version);
+  }, [versions, getVersionsStatus, onChangeVersion]);
 
   useEffect(() => {
     if (!autoConnectMode) return;
@@ -156,7 +168,6 @@ export const Home = () => {
   }, [autoConnectMode, connector, read]);
 
   useEffect(() => {
-    console.log("called!");
     const locale = localStorage.getItem("locale");
     if (!locale) return;
 
@@ -217,9 +228,9 @@ export const Home = () => {
               </Typography>
               <CompilerSelector
                 versions={versions.sort()}
-                defaultVersion="3.2.0"
+                version={version || ""}
                 disabled={getVersionsStatus != "success"}
-                onChange={(version) => compile(version)}
+                onChange={onChangeVersion}
                 sx={{ width: "100%" }}
               />
             </Box>
