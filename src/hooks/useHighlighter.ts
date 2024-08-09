@@ -1,8 +1,5 @@
 import { useEffect, useState } from "react";
 import { createHighlighterCore, HighlighterCore } from "shiki";
-import getWasm from "shiki/wasm";
-import githubLight from "shiki/themes/github-light.mjs";
-import ruby from "shiki/langs/ruby.mjs";
 
 // カスタムフックの定義
 export const useHighlighter = () => {
@@ -12,9 +9,9 @@ export const useHighlighter = () => {
   useEffect(() => {
     const createHighlighter = async () => {
       const highlighter = await createHighlighterCore({
-        themes: [githubLight],
-        langs: [ruby],
-        loadWasm: getWasm,
+        themes: [import("shiki/themes/github-light.mjs")],
+        langs: [import("shiki/langs/ruby.mjs")],
+        loadWasm: import("shiki/wasm"),
       });
       setHighlighter(highlighter);
     };
