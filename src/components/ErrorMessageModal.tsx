@@ -23,10 +23,12 @@ export const ErrorDetailModal = ({
             background: "rgba(0, 0, 0, 0.5)",
             zIndex: 3,
           }}
-        ></Sheet>
+        />
         <Sheet
           variant="outlined"
           sx={{
+            textAlign: "left",
+            left: 0,
             position: "absolute",
             zIndex: "4",
             width: "60rem",
