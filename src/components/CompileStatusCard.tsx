@@ -63,6 +63,7 @@ export const CompileStatusCard = ({
             flexDirection="row"
             alignItems="center"
             justifyContent="center"
+            width="100%"
           >
             {t("コンパイル失敗")}
             <ErrorOutlineIcon color="error" />
@@ -73,7 +74,7 @@ export const CompileStatusCard = ({
                 display="flex"
                 flexDirection="column"
                 textAlign="center"
-                flex="1"
+                width="100%"
                 py="0.2rem"
                 sx={{
                   userSelect: "none",
@@ -90,8 +91,8 @@ export const CompileStatusCard = ({
                 <code>{errorName ?? "unknown error"}</code>
                 <Typography fontSize="0.8rem" color="danger">
                   {isOpenErrorDetail
-                    ? "クリックして閉じる"
-                    : "エラーの詳細を見る"}
+                    ? t("クリックして閉じる")
+                    : t("エラーの詳細を見る")}
                 </Typography>
               </Box>
               <ErrorDetailModal
