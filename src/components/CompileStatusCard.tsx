@@ -2,11 +2,12 @@ import {
   Check as CheckIcon,
   ErrorOutline as ErrorOutlineIcon,
 } from "@mui/icons-material";
-import { Box, Sheet, Typography } from "@mui/joy";
+import { Box, Typography } from "@mui/joy";
 import { CircularProgress } from "@mui/material";
 import { CompileStatus } from "hooks/useCompile";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { ErrorDetailModal } from "./ErrorMessageModal";
 
 export const CompileStatusCard = ({
   status,
@@ -49,7 +50,14 @@ export const CompileStatusCard = ({
         </>
       )}
       {status === "error" && (
-        <Box display="flex" flexDirection="column" flex="1">
+        <Box
+          display="flex"
+          flexDirection="column"
+          flex="1"
+          alignItems="center"
+          justifyContent="center"
+          textAlign="center"
+        >
           <Box
             display="flex"
             flexDirection="row"
@@ -59,66 +67,41 @@ export const CompileStatusCard = ({
             {t("コンパイル失敗")}
             <ErrorOutlineIcon color="error" />
           </Box>
-          <Box
-            display="flex"
-            flexDirection="column"
-            textAlign="center"
-            flex="1"
-            py="0.2rem"
-            sx={{
-              userSelect: "none",
-              ":hover": {
-                background: "#FFEEEE",
-              },
-              ":active": {
-                background: "#FFDDDD",
-              },
-            }}
-            borderRadius="0.5rem"
-            onClick={() => setIsOpenErrorDetail((prev) => !prev)}
-          >
-            <code>{errorName ?? "unknown error"}</code>
-            <Typography fontSize="0.8rem" color="danger">
-              {isOpenErrorDetail ? "クリックして閉じる" : "エラーの詳細を見る"}
-            </Typography>
-          </Box>
-          {isOpenErrorDetail && (
+          {errorBody ? (
             <>
-              <Sheet
-                onClick={() => setIsOpenErrorDetail(false)}
+              <Box
+                display="flex"
+                flexDirection="column"
+                textAlign="center"
+                flex="1"
+                py="0.2rem"
                 sx={{
-                  top: 0,
-                  left: 0,
-                  width: "min(100dvw, 100vw)",
-                  height: "min(100dvh, 100vh)",
-                  position: "fixed",
-                  background: "rgba(0, 0, 0, 0.5)",
-                  zIndex: 3,
+                  userSelect: "none",
+                  ":hover": {
+                    background: "#FFEEEE",
+                  },
+                  ":active": {
+                    background: "#FFDDDD",
+                  },
                 }}
-              ></Sheet>
-              <Sheet
-                variant="outlined"
-                sx={{
-                  position: "absolute",
-                  zIndex: "4",
-                  width: "60rem",
-                  minWidth: "30rem",
-                  maxWidth: "calc(100vw - 10rem)",
-                  maxHeight: "30rem",
-                  overflow: "auto",
-                  top: "10.5rem",
-                  p: "1rem",
-                  borderRadius: "0.3rem",
-                  borderColor: "#FFBBBB",
-                  display: "flex",
-                  flexDirection: "column",
-                  boxShadow: "0px 3px 10px gray",
-                }}
+                borderRadius="0.5rem"
+                onClick={() => setIsOpenErrorDetail((prev) => !prev)}
               >
-                {errorBody?.split("\n").map((t) => <code>{t}</code>) ??
-                  "(no error body)"}
-              </Sheet>
+                <code>{errorName ?? "unknown error"}</code>
+                <Typography fontSize="0.8rem" color="danger">
+                  {isOpenErrorDetail
+                    ? "クリックして閉じる"
+                    : "エラーの詳細を見る"}
+                </Typography>
+              </Box>
+              <ErrorDetailModal
+                error={errorBody}
+                isOpen={isOpenErrorDetail}
+                setIsOpen={setIsOpenErrorDetail}
+              />
             </>
+          ) : (
+            <code>{errorName ?? "unknown error"}</code>
           )}
         </Box>
       )}
