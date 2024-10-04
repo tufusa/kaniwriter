@@ -76,9 +76,7 @@ export const useCompile = (
 
       const compileResult: CompileResponse =
         (await compileResponse.json()) as CompileResponse;
-      console.log(compileResult);
       if (compileResult.status == "error") {
-        console.log(compileResult);
         setStatus({
           status: "error",
           errorName: "compile failed",
