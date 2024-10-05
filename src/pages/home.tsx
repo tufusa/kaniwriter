@@ -238,7 +238,12 @@ export const Home = () => {
               status={
                 getVersionsStatus == "error" ? "error" : compileStatus.status
               }
-              error={compileStatus.error}
+              errorName={
+                getVersionsStatus == "error"
+                  ? "fetching versions failed"
+                  : compileStatus.errorName
+              }
+              errorBody={compileStatus.errorBody}
             />
           </Sheet>
 

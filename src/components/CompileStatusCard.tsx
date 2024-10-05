@@ -2,15 +2,20 @@ import {
   Check as CheckIcon,
   ErrorOutline as ErrorOutlineIcon,
 } from "@mui/icons-material";
-import { Box } from "@mui/joy";
+import { Box, Typography } from "@mui/joy";
 import { CircularProgress } from "@mui/material";
 import { CompileStatus } from "hooks/useCompile";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { ErrorDetailModal } from "./ErrorMessageModal";
 
-type Props = CompileStatus;
-
-export const CompileStatusCard = ({ status, error }: Props) => {
+export const CompileStatusCard = ({
+  status,
+  errorName,
+  errorBody,
+}: CompileStatus) => {
   const [t] = useTranslation();
+  const [isOpenErrorDetail, setIsOpenErrorDetail] = useState(false);
 
   return (
     <Box
@@ -45,13 +50,61 @@ export const CompileStatusCard = ({ status, error }: Props) => {
         </>
       )}
       {status === "error" && (
-        <>
-          {t("コンパイル失敗")}
-          <ErrorOutlineIcon color="error" />
-          <Box textAlign="center">
-            <code>{error}</code>
+        <Box
+          display="flex"
+          flexDirection="column"
+          flex="1"
+          alignItems="center"
+          justifyContent="center"
+          textAlign="center"
+        >
+          <Box
+            display="flex"
+            flexDirection="row"
+            alignItems="center"
+            justifyContent="center"
+            width="100%"
+          >
+            {t("コンパイル失敗")}
+            <ErrorOutlineIcon color="error" />
           </Box>
-        </>
+          {errorBody ? (
+            <>
+              <Box
+                display="flex"
+                flexDirection="column"
+                textAlign="center"
+                width="100%"
+                py="0.2rem"
+                sx={{
+                  userSelect: "none",
+                  ":hover": {
+                    background: "#FFEEEE",
+                  },
+                  ":active": {
+                    background: "#FFDDDD",
+                  },
+                }}
+                borderRadius="0.5rem"
+                onClick={() => setIsOpenErrorDetail((prev) => !prev)}
+              >
+                <code>{errorName ?? "unknown error"}</code>
+                <Typography fontSize="0.8rem" color="danger">
+                  {isOpenErrorDetail
+                    ? t("クリックして閉じる")
+                    : t("エラーの詳細を見る")}
+                </Typography>
+              </Box>
+              <ErrorDetailModal
+                error={errorBody}
+                isOpen={isOpenErrorDetail}
+                setIsOpen={setIsOpenErrorDetail}
+              />
+            </>
+          ) : (
+            <code>{errorName ?? "unknown error"}</code>
+          )}
+        </Box>
       )}
     </Box>
   );
