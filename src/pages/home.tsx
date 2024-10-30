@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Box,
   FormLabel,
@@ -29,7 +29,7 @@ import { Version, useVersions } from "hooks/useVersions";
 import { useCompile } from "hooks/useCompile";
 import { CompileStatusCard } from "components/CompileStatusCard";
 import { useTranslation } from "react-i18next";
-
+import { useCrc8 } from "hooks/useCrc8";
 const targets = [
   {
     title: "RBoard",
@@ -80,6 +80,51 @@ export const Home = () => {
     }
   }, [t, connector]);
 
+  const crc8 = useMemo(() => (code ? useCrc8(code) : 0), [code]);
+  const verifyCode = useCallback(
+    async (hash: number) => {
+      console.log("code: " + code);
+      if (!code) return;
+      //const crc8 = useCrc8(code);
+      console.log("crc8: " + crc8);
+      if (crc8 == hash) {
+        return true;
+      } else {
+        return false;
+      }
+    },
+    [code]
+  );
+  //切断せずにもう一度書き込もうとするときに動くようにする
+  const entry = useCallback(async () => {
+    return new Promise<void>((resolve, reject) => {
+      const interval = setInterval(async () => {
+        console.error(connector.isWriteMode, connector.isConnected);
+        if (connector.isWriteMode) {
+          clearInterval(interval);
+          resolve();
+          return;
+        } else if (!connector.isConnected) {
+          clearInterval(interval);
+          reject();
+          return;
+        }
+        //CRLFを送信
+        const res = await connector.sendCommand("", {
+          force: true,
+          ignoreResponse: true,
+        });
+        if (res.isFailure()) {
+          clearInterval(interval);
+          reject();
+          console.error(res);
+          return;
+        }
+        console.log("SEND:CRLF\n");
+      }, 1500);
+    });
+  }, [connector]);
+
   const connect = useCallback(async () => {
     const res = await connector.connect(
       async () => await navigator.serial.requestPort()
@@ -89,8 +134,8 @@ export const Home = () => {
       console.log(res);
       return;
     }
-    await read();
-  }, [t, connector, read]);
+    await Promise.all([read(), entry()]);
+  }, [t, connector, read, entry]);
 
   const disconnect = useCallback(async () => {
     const res = await connector.disconnect();
@@ -103,15 +148,26 @@ export const Home = () => {
 
   const send = useCallback(
     async (text: string) => {
-      const res = await connector.sendCommand(text, { force: true });
+      const res = await connector.sendCommand(text, {
+        force: true,
+      });
       console.log(res);
       if (res.isFailure()) {
         alert(
           `${t("送信中にエラーが発生しました。")}\n${res.error}\ncause: ${res.error.cause}`
         );
       }
+      if (text == "verify") {
+        if (res.isSuccess() && res.value.includes("+OK")) {
+          //マイコンから帰ってくるハッシュ値だけを取り出す
+          const hash = res.value.split("+OK ")[1].split("\r\n")[0];
+          const result = await verifyCode(parseInt(hash, 16));
+          console.log("Verify Result: " + result);
+          if (result != undefined) connector.verify(result);
+        }
+      }
     },
-    [t, connector]
+    [t, connector, verifyCode]
   );
 
   const writeCode = useCallback(async () => {
@@ -159,13 +215,13 @@ export const Home = () => {
             console.log(result);
             return;
           }
-
+          entry();
           read();
         });
     };
 
     autoConnect();
-  }, [autoConnectMode, connector, read]);
+  }, [autoConnectMode, connector, read, entry]);
 
   useEffect(() => {
     const locale = localStorage.getItem("locale");
