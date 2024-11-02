@@ -19,7 +19,7 @@ const baudRates: Record<Target, number> = {
 
 const enterWriteModeKeyword: Record<Target, RegExp> = {
   ESP32: /mrubyc-esp32: Please push Enter key x 2 to mrbwite mode/,
-  RBoard: /mruby\/c v\d.\d start./,
+  RBoard: /mruby\/c v\d+(\.\d+)* start\./,
 } as const;
 
 const exitWriteModeKeyword: Record<Target, RegExp> = {
