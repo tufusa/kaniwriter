@@ -443,6 +443,9 @@ export const Home = () => {
               color="neutral"
               onChange={(_, v) => setCommand(v as string)}
               defaultValue=""
+              autoHighlight
+              autoComplete
+              freeSolo
               sx={{
                 borderRadius: "0",
                 borderBottom: "solid",
