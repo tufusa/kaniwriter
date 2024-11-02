@@ -21,8 +21,5 @@ jobs:
      - name: Install Dependencies
        run: bun install
 
-     - name: Format Code
-       run: bun prettier
-
-     - name: Lint Code
-       run: bun format
+     - name: Test
+       run: bun check
