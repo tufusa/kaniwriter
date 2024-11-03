@@ -451,7 +451,7 @@ export const Home = () => {
                 borderBottom: "solid",
                 borderWidth: "1px",
                 borderColor: "rgba(0, 0, 0, 0.42)",
-                width: "10rem",
+                width: "12rem",
               }}
             />
             <Input type="submit" onClick={() => send(command)} value="Send" />
