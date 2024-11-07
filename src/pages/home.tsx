@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  Autocomplete,
   Box,
   FormLabel,
   Radio,
@@ -40,6 +41,17 @@ const targets = [
     image: ESP32,
   },
 ] as const satisfies readonly { title: Target; image: string }[];
+
+// マイコンに送信可能なコマンド
+const commands = [
+  "version",
+  "clear",
+  "write",
+  "execute",
+  "reset",
+  "help",
+  "showprog",
+] as const;
 
 export const Home = () => {
   const [t, i18n] = useTranslation("ns1");
@@ -293,7 +305,12 @@ export const Home = () => {
               status={
                 getVersionsStatus == "error" ? "error" : compileStatus.status
               }
-              error={compileStatus.error}
+              errorName={
+                getVersionsStatus == "error"
+                  ? "fetching versions failed"
+                  : compileStatus.errorName
+              }
+              errorBody={compileStatus.errorBody}
             />
           </Sheet>
 
@@ -474,7 +491,24 @@ export const Home = () => {
               justifyContent: "right",
             }}
           >
-            <Input type="text" onChange={(e) => setCommand(e.target.value)} />
+            <Autocomplete
+              placeholder={t("コマンド")}
+              options={commands}
+              variant="plain"
+              color="neutral"
+              onChange={(_, v) => setCommand(v as string)}
+              defaultValue=""
+              autoHighlight
+              autoComplete
+              freeSolo
+              sx={{
+                borderRadius: "0",
+                borderBottom: "solid",
+                borderWidth: "1px",
+                borderColor: "rgba(0, 0, 0, 0.42)",
+                width: "12rem",
+              }}
+            />
             <Input type="submit" onClick={() => send(command)} value="Send" />
           </Box>
         </Box>

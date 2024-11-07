@@ -22,5 +22,8 @@
   "書き込みツール": "kaniwriter",
   "参考資料": "Reference",
   "ソースコードを表示": "Show source code",
-  "ソースコードを非表示": "Hide source code"
+  "ソースコードを非表示": "Hide source code",
+  "エラーの詳細を見る": "Click to view error details",
+  "クリックして閉じる": "Click to close",
+  "コマンド": "Command"
 }

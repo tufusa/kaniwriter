@@ -4,13 +4,18 @@ import Base64 from "base64-js";
 
 export type CompileStatus = {
   status: "idle" | "compile" | "success" | "error";
-  error?: string;
+  errorName?: string;
+  errorBody?: string;
 };
 type Compile = (version: Version) => void;
-type CompileResponse = {
-  binary: string;
-  error: string;
-};
+type CompileResponse =
+  | { status: "ok"; binary: string } // `200 OK` コンパイル成功
+  | { status: "error"; error: string } // `200 OK` コンパイル失敗
+  | {
+      status: "invalid id" | "unknown compiler version";
+      id: "";
+    } // `400 Bad Request`
+  | { status: "failed to compile"; id: "" }; //`500 Internal Error`
 type CodeResponse = {
   code: string;
 };
@@ -31,7 +36,7 @@ export const useCompile = (
       if (!id) {
         setStatus({
           status: "error",
-          error: "No id specified",
+          errorName: "no id specified",
         });
         return;
       }
@@ -44,15 +49,13 @@ export const useCompile = (
       if (!codeResponse?.ok) {
         setStatus({
           status: "error",
-          error: "No source code found.",
+          errorName: "no source code found",
         });
         return;
       }
 
       // レスポンスから、送信したmruby/cのソースコードを抽出
-      const codeResult = await codeResponse
-        .json()
-        .then((json) => json as CodeResponse);
+      const codeResult = (await codeResponse.json()) as CodeResponse;
       setSourceCode(
         new TextDecoder().decode(Base64.toByteArray(codeResult.code))
       );
@@ -66,17 +69,23 @@ export const useCompile = (
           method: "POST",
         }
       ).catch(() => undefined);
-      if (!compileResponse?.ok) {
-        setStatus({ status: "error", error: "Compile failed." });
+      if (!compileResponse) {
+        setStatus({ status: "error", errorName: "fetching compiler failed" });
         return;
       }
 
-      const compileResult = await compileResponse
-        .json()
-        .then((json) => json as CompileResponse)
-        .catch(() => undefined);
-      if (!compileResult || compileResult.error !== "") {
-        setStatus({ status: "error", error: "Compile failed." });
+      const compileResult: CompileResponse =
+        (await compileResponse.json()) as CompileResponse;
+      if (compileResult.status == "error") {
+        setStatus({
+          status: "error",
+          errorName: "compile failed",
+          errorBody: compileResult.error,
+        });
+        return;
+      }
+      if (compileResult.status != "ok") {
+        setStatus({ status: "error", errorName: compileResult.status });
         return;
       }
 
