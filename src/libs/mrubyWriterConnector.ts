@@ -23,7 +23,7 @@ const enterWriteModeKeyword: Record<Target, RegExp> = {
 } as const;
 const exitWriteModeKeyword: Record<Target, RegExp> = {
   ESP32: /mrubyc-esp32: End mrbwrite mode/,
-  RBoard: /start./, ///\+OK Execute mruby\/c./,
+  RBoard: /mruby\/c v\d+(\.\d+)* start\./, ///\+OK Execute mruby\/c./,
 } as const;
 
 export class MrubyWriterConnector {

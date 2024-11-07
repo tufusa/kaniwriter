@@ -80,7 +80,7 @@ export const Home = () => {
     }
   }, [t, connector]);
 
-  const crc8 = useMemo(() => (code ? useCrc8(code) : 0), [code]);
+  const crc8 = useMemo(() => (code ? useCrc8(code) : undefined), [code]);
   const verifyCode = useCallback(
     async (hash: number) => {
       console.log("code: " + code);
@@ -120,8 +120,7 @@ export const Home = () => {
           console.error(res);
           return;
         }
-        console.log("SEND:CRLF\n");
-      }, 1500);
+      }, 1000);
     });
   }, [connector]);
 
