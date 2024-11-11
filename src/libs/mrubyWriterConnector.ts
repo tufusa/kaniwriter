@@ -23,7 +23,7 @@ const enterWriteModeKeyword: Record<Target, RegExp> = {
 } as const;
 const exitWriteModeKeyword: Record<Target, RegExp> = {
   ESP32: /mrubyc-esp32: End mrbwrite mode/,
-  RBoard: /\+OK Execute mruby\/c./,
+  RBoard: /\+OK Execute mruby\/c\./,
 } as const;
 
 export class MrubyWriterConnector {
@@ -254,6 +254,7 @@ export class MrubyWriterConnector {
       return Failure.error("No port.");
     }
 
+    console.log(new TextDecoder().decode(chunk));
     const send = async (): Promise<Result<string, Error>> => {
       const writerRes = this.getWriter();
       if (writerRes.isFailure()) {

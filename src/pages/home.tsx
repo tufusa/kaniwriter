@@ -105,12 +105,13 @@ export const Home = () => {
         return false;
       }
     },
-    [code,crc8]
+    [code, crc8]
   );
   //切断せずにもう一度書き込もうとするときに動くようにする
   const entry = useCallback(async () => {
     return new Promise<void>((resolve, reject) => {
       const interval = setInterval(async () => {
+        console.log("entry");
         console.error(connector.isWriteMode, connector.isConnected);
         if (connector.isWriteMode) {
           clearInterval(interval);
@@ -158,10 +159,11 @@ export const Home = () => {
   }, [t, connector]);
 
   const send = useCallback(
-    async (text: string) => {
-      const res = await connector.sendCommand(text, {
-        force: true,
-      });
+    async (
+      text: string,
+      option?: Parameters<typeof connector.sendCommand>[1]
+    ) => {
+      const res = await connector.sendCommand(text, option);
       console.log(res);
       if (res.isFailure()) {
         alert(
@@ -472,7 +474,7 @@ export const Home = () => {
             <ControlButton
               label={t("実行")}
               icon={<FlagIcon />}
-              onClick={() => send("execute")}
+              onClick={() => send("execute",{ignoreResponse:true})}
               disabled={!connector.isWriteMode}
               color="success"
             />
@@ -509,7 +511,7 @@ export const Home = () => {
                 width: "12rem",
               }}
             />
-            <Input type="submit" onClick={() => send(command)} value="Send" />
+            <Input type="submit" onClick={() => send(command,{force:true})} value="Send" />
           </Box>
         </Box>
       </Box>
