@@ -415,40 +415,40 @@ export class MrubyWriterConnector {
     this._writeMode = true;
     return Success.value(null);
   }
-  private async onAttemptEnterWriteMode(): Promise<Result<null, Error>> {
-    if (!this.port) {
-      return Failure.error("No port.");
-    }
-    if (this._writeMode) {
-      return Failure.error("Already write mode.");
-    }
-    if (!this.subReadable) {
-      return Failure.error("Cannot read serial port.");
-    }
-    if (!this.port.writable) {
-      return Failure.error("Cannot write serial port.");
-    }
+  // private async onAttemptEnterWriteMode(): Promise<Result<null, Error>> {
+  //   if (!this.port) {
+  //     return Failure.error("No port.");
+  //   }
+  //   if (this._writeMode) {
+  //     return Failure.error("Already write mode.");
+  //   }
+  //   if (!this.subReadable) {
+  //     return Failure.error("Cannot read serial port.");
+  //   }
+  //   if (!this.port.writable) {
+  //     return Failure.error("Cannot write serial port.");
+  //   }
 
-    const enter = async (): Promise<Result<null, Error>> => {
-      const response = await this.sendData(this.encoder.encode("\r\n\r\n"));
-      if (response.isFailure()) {
-        return response;
-      }
-      if (!response.value.includes("+OK mruby/c")) {
-        return Failure.error("Cannot enter write mode");
-      }
+  //   const enter = async (): Promise<Result<null, Error>> => {
+  //     const response = await this.sendData(this.encoder.encode("\r\n\r\n"));
+  //     if (response.isFailure()) {
+  //       return response;
+  //     }
+  //     if (!response.value.includes("+OK mruby/c")) {
+  //       return Failure.error("Cannot enter write mode");
+  //     }
 
-      this._writeMode = true;
-      return Success.value(null);
-    };
+  //     this._writeMode = true;
+  //     return Success.value(null);
+  //   };
 
-    const enterJob = enter();
-    this.jobQueue.push({
-      job: enterJob,
-      description: "attempt to enter write mode",
-    });
-    return await enterJob;
-  }
+  //   const enterJob = enter();
+  //   this.jobQueue.push({
+  //     job: enterJob,
+  //     description: "attempt to enter write mode",
+  //   });
+  //   return await enterJob;
+  // }
 
   private async onExitWriteMode(): Promise<Success<null>> {
     this._writeMode = false;

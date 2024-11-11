@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Autocomplete,
   Box,
@@ -93,12 +93,11 @@ export const Home = () => {
     }
   }, [t, connector]);
 
-  const crc8 = useMemo(() => (code ? useCrc8(code) : undefined), [code]);
+  const crc8 = useCrc8(code);
   const verifyCode = useCallback(
     async (hash: number) => {
       console.log("code: " + code);
       if (!code) return;
-      //const crc8 = useCrc8(code);
       console.log("crc8: " + crc8);
       if (crc8 == hash) {
         return true;
@@ -106,7 +105,7 @@ export const Home = () => {
         return false;
       }
     },
-    [code]
+    [code,crc8]
   );
   //切断せずにもう一度書き込もうとするときに動くようにする
   const entry = useCallback(async () => {
