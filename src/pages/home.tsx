@@ -51,6 +51,7 @@ const commands = [
   "reset",
   "help",
   "showprog",
+  "verify",
 ] as const;
 
 export const Home = () => {
