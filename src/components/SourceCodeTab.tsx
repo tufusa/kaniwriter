@@ -1,7 +1,7 @@
-import { Box, Card, Button, Typography } from "@mui/joy";
+import { Box, Button, Card, Typography } from "@mui/joy";
+import { useHighlighter } from "hooks/useHighlighter";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useHighlighter } from "hooks/useHighlighter";
 
 interface CodeProps {
   sourceCode: string;
