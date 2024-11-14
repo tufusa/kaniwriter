@@ -7,11 +7,10 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "build:ceres": "tsc && NODE_OPTIONS=--max-old-space-size=4096 vite build --mode ceres",
-    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "format": "eslint src --fix && prettier --write \"src/**/*.{js,jsx,ts,tsx,json,md}\"",
     "prettier": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,md}\"",
-    "check": "prettier --check \"src/**/*.{ts,tsx}\" && tsc -p . --noEmit && eslint src --ext ts,tsx --max-warnings 0"
+    "check": "biome check --write",
+    "check:ci": "biome ci && tsc -p . --noEmit"
   },
   "packageManager": "pnpm@9.12.3",
   "dependencies": {
@@ -29,20 +28,13 @@
     "react-router-dom": "^6.11.2"
   },
   "devDependencies": {
+    "@biomejs/biome": "1.9.4",
     "@types/node": "^20.8.10",
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.11",
     "@types/w3c-web-serial": "^1.0.6",
-    "@typescript-eslint/eslint-plugin": "^7.0.0",
-    "@typescript-eslint/parser": "^7.0.0",
     "@vitejs/plugin-react": "^4.0.0",
-    "eslint": "^8.41.0",
-    "eslint-config-prettier": "^9.0.0",
-    "eslint-config-standard": "^17.0.0",
-    "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-react-refresh": "^0.4.0",
     "path": "^0.12.7",
-    "prettier": "^3.0.0",
     "shiki": "^1.7.0",
     "typescript": "^5.0.2",
     "vite": "^5.0.0"

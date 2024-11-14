@@ -1,5 +1,5 @@
 import { WritableStreamDefaultWriter } from "stream/web";
-import { Result, Success, Failure } from "./result";
+import { Failure, Result, Success } from "./result";
 
 export const targets = ["ESP32", "RBoard"] as const;
 export type Target = (typeof targets)[number];

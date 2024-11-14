@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { useEffect, useState } from "react";
 
 export type Version = string;
@@ -8,7 +9,7 @@ export const useVersions = (): [versions: Version[], status: Status] => {
   const [versions, setVersions] = useState<Version[]>([]);
   const [status, setStatus] = useState<Status>("idle");
 
-  const getVersions = async () => {
+  const getVersions = useCallback(async () => {
     setStatus("load");
     const response = await fetch(
       `${import.meta.env.VITE_COMPILER_URL}/versions`
@@ -31,11 +32,11 @@ export const useVersions = (): [versions: Version[], status: Status] => {
 
     setVersions(versionsData.map((record) => record.version));
     setStatus("success");
-  };
+  }, []);
 
   useEffect(() => {
     getVersions();
-  }, []);
+  }, [getVersions]);
 
   return [versions, status];
 };
