@@ -7,11 +7,10 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "build:ceres": "tsc && NODE_OPTIONS=--max-old-space-size=4096 vite build --mode ceres",
-    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "format": "eslint src --fix && prettier --write \"src/**/*.{js,jsx,ts,tsx,json,md}\"",
     "prettier": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,md}\"",
-    "check": "prettier --check \"src/**/*.{ts,tsx}\" && tsc -p . --noEmit && eslint src --ext ts,tsx --max-warnings 0"
+    "check": "biome check --write",
+    "check:ci": "biome ci && tsc -p . --noEmit"
   },
   "packageManager": "pnpm@9.12.3",
   "dependencies": {
