@@ -30,7 +30,6 @@ import { Version, useVersions } from "hooks/useVersions";
 import { useCompile } from "hooks/useCompile";
 import { CompileStatusCard } from "components/CompileStatusCard";
 import { useTranslation } from "react-i18next";
-
 const targets = [
   {
     title: "RBoard",
@@ -92,6 +91,34 @@ export const Home = () => {
     }
   }, [t, connector]);
 
+  //１秒おきにCRLFを送信する
+  const entry = useCallback(async () => {
+    return new Promise<void>((resolve, reject) => {
+      const interval = setInterval(async () => {
+        console.error(connector.isWriteMode, connector.isConnected);
+        if (connector.isWriteMode) {
+          clearInterval(interval);
+          resolve();
+          return;
+        } else if (!connector.isConnected) {
+          clearInterval(interval);
+          reject();
+          return;
+        }
+        const res = await connector.sendCommand("\r\n", {
+          force: true,
+          ignoreResponse: true,
+        });
+        if (res.isFailure()) {
+          clearInterval(interval);
+          reject();
+          console.error(res);
+          return;
+        }
+      }, 1000);
+    });
+  }, [connector]);
+
   const connect = useCallback(async () => {
     const res = await connector.connect(
       async () => await navigator.serial.requestPort()
@@ -101,8 +128,8 @@ export const Home = () => {
       console.log(res);
       return;
     }
-    await read();
-  }, [t, connector, read]);
+    await Promise.all([read(), entry()]);
+  }, [t, connector, read, entry]);
 
   const disconnect = useCallback(async () => {
     const res = await connector.disconnect();
@@ -114,8 +141,11 @@ export const Home = () => {
   }, [t, connector]);
 
   const send = useCallback(
-    async (text: string) => {
-      const res = await connector.sendCommand(text, { force: true });
+    async (
+      text: string,
+      option?: Parameters<typeof connector.sendCommand>[1]
+    ) => {
+      const res = await connector.sendCommand(text, option);
       console.log(res);
       if (res.isFailure()) {
         alert(
@@ -171,13 +201,13 @@ export const Home = () => {
             console.log(result);
             return;
           }
-
+          entry();
           read();
         });
     };
 
     autoConnect();
-  }, [autoConnectMode, connector, read]);
+  }, [autoConnectMode, connector, read, entry]);
 
   useEffect(() => {
     const locale = localStorage.getItem("locale");
@@ -417,7 +447,7 @@ export const Home = () => {
             <ControlButton
               label={t("実行")}
               icon={<FlagIcon />}
-              onClick={() => send("execute")}
+              onClick={() => send("execute", { ignoreResponse: true })}
               disabled={!connector.isWriteMode}
               color="success"
             />
@@ -454,7 +484,11 @@ export const Home = () => {
                 width: "12rem",
               }}
             />
-            <Input type="submit" onClick={() => send(command)} value="Send" />
+            <Input
+              type="submit"
+              onClick={() => send(command, { force: true })}
+              value="Send"
+            />
           </Box>
         </Box>
       </Box>
