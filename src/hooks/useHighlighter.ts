@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { createHighlighterCore, HighlighterCore } from "shiki";
+import { HighlighterCore, createHighlighterCore } from "shiki";
 
 // カスタムフックの定義
 export const useHighlighter = () => {
