@@ -93,10 +93,9 @@ export const Home = () => {
   }, [t, connector]);
 
   //１秒おきにCRLFを送信する
-  const entry = useCallback(async () => {
+  const tryEntry = useCallback(async () => {
     return new Promise<void>((resolve, reject) => {
       const interval = setInterval(async () => {
-        console.error(connector.isWriteMode, connector.isConnected);
         if (connector.isWriteMode) {
           clearInterval(interval);
           resolve();
@@ -106,7 +105,7 @@ export const Home = () => {
           reject();
           return;
         }
-        const res = await connector.sendCommand("\r\n", {
+        const res = await connector.tryEnterWriteMode({
           force: true,
           ignoreResponse: true,
         });
@@ -129,8 +128,8 @@ export const Home = () => {
       console.log(res);
       return;
     }
-    await Promise.all([read(), entry()]);
-  }, [t, connector, read, entry]);
+    await Promise.all([read(), tryEntry()]);
+  }, [t, connector, read, tryEntry]);
 
   const disconnect = useCallback(async () => {
     const res = await connector.disconnect();
@@ -202,13 +201,13 @@ export const Home = () => {
             console.log(result);
             return;
           }
-          entry();
+          tryEntry();
           read();
         });
     };
 
     autoConnect();
-  }, [autoConnectMode, connector, read, entry]);
+  }, [autoConnectMode, connector, read, tryEntry]);
 
   useEffect(() => {
     const locale = localStorage.getItem("locale");
