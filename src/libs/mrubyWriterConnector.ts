@@ -216,21 +216,19 @@ export class MrubyWriterConnector {
     });
   }
 
-  async tryEnterWriteMode(
-    option?: Partial<{ force: boolean; ignoreResponse: boolean }>
-  ): Promise<Result<string, Error>> {
+  async tryEnterWriteMode(): Promise<Result<string, Error>> {
     if (!this.port) {
       return Failure.error("No port.");
     }
-    if (!option?.force && !this._writeMode) {
-      return Failure.error("Not write mode now.");
+    if (this._writeMode) {
+      return Failure.error("Already write mode.");
     }
 
     await this.completeJobs();
     this.handleText(`\r\nTrying to enter command mode.\r\n`);
 
     return this.sendData(this.encoder.encode(`\r\n`), {
-      ignoreResponse: option?.ignoreResponse,
+      ignoreResponse: true,
     });
   }
 

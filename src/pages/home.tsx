@@ -105,10 +105,7 @@ export const Home = () => {
           reject();
           return;
         }
-        const res = await connector.tryEnterWriteMode({
-          force: true,
-          ignoreResponse: true,
-        });
+        const res = await connector.tryEnterWriteMode();
         if (res.isFailure()) {
           clearInterval(interval);
           reject();
