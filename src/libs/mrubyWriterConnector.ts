@@ -229,7 +229,8 @@ export class MrubyWriterConnector {
       `\r\n\u001b[32m> Trying to enter command mode...\u001b[0m\r\n`
     );
 
-    return this.sendData(this.encoder.encode(`\r\n`), {
+    // 改行文字(CRLF)のみを送信
+    return this.sendCommand("", {
       ignoreResponse: true,
     });
   }
