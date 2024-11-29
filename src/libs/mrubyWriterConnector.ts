@@ -227,7 +227,8 @@ export class MrubyWriterConnector {
     await this.completeJobs();
     this.handleText(`\r\nTrying to enter command mode.\r\n`);
 
-    return this.sendData(this.encoder.encode(`\r\n`), {
+    // 改行文字(CRLF)のみを送信
+    return this.sendCommand("", {
       ignoreResponse: true,
     });
   }
