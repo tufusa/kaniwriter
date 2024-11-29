@@ -92,7 +92,7 @@ export const Home = () => {
     }
   }, [t, connector]);
 
-  //１秒おきにCRLFを送信する
+  //１秒ごとに書き込みモードに入ることを試みる
   const tryEntry = useCallback(async () => {
     return new Promise<void>((resolve, reject) => {
       const interval = setInterval(async () => {

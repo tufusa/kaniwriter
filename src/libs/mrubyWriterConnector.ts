@@ -225,7 +225,9 @@ export class MrubyWriterConnector {
     }
 
     await this.completeJobs();
-    this.handleText(`\r\nTrying to enter command mode.\r\n`);
+    this.handleText(
+      `\r\n\u001b[32m> Trying to enter command mode...\u001b[0m\r\n`
+    );
 
     return this.sendData(this.encoder.encode(`\r\n`), {
       ignoreResponse: true,
