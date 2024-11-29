@@ -483,7 +483,9 @@ export const Home = () => {
             />
             <Input
               type="submit"
-              onClick={() => send(command, { force: true })}
+              onClick={() =>
+                send(command, { force: true, ignoreResponse: true })
+              }
               value="Send"
             />
           </Box>
