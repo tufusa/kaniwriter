@@ -226,11 +226,11 @@ export class MrubyWriterConnector {
 
     await this.completeJobs();
     this.handleText(
-      `\r\n\u001b[32m> Trying to enter command mode...\u001b[0m\r\n`
+      `\r\n\u001b[32m> try to enter command mode...\u001b[0m\r\n`
     );
 
     // 改行文字(CRLF)のみを送信
-    return this.sendCommand("", {
+    return this.sendData(this.encoder.encode("\r\n"), {
       ignoreResponse: true,
     });
   }
