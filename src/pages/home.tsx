@@ -1,35 +1,36 @@
-import { useCallback, useEffect, useState } from "react";
 import {
+  CheckCircleRounded as CheckCircleRoundedIcon,
+  Edit as EditIcon,
+  Flag as FlagIcon,
+  Usb as UsbIcon,
+  UsbOff as UsbOffIcon,
+} from "@mui/icons-material";
+import {
+  Autocomplete,
   Box,
   FormLabel,
   Radio,
-  radioClasses,
   RadioGroup,
   Sheet,
+  radioClasses,
 } from "@mui/joy";
 import { Checkbox, FormControlLabel, Input, Typography } from "@mui/material";
-import {
-  Flag as FlagIcon,
-  Usb as UsbIcon,
-  Edit as EditIcon,
-  UsbOff as UsbOffIcon,
-  CheckCircleRounded as CheckCircleRoundedIcon,
-} from "@mui/icons-material";
+import { useCallback, useEffect, useState } from "react";
 
+import { CompileStatusCard } from "components/CompileStatusCard";
+import { CompilerSelector } from "components/CompilerSelector";
+import { ControlButton } from "components/ControlButton";
+import { Log } from "components/Log";
+import { SourceCodeTab } from "components/SourceCodeTab";
+import { useCompile } from "hooks/useCompile";
+import { useQuery } from "hooks/useQuery";
+import { Version, useVersions } from "hooks/useVersions";
 import { MrubyWriterConnector, Target } from "libs/mrubyWriterConnector";
 import { isTarget } from "libs/utility";
-import { useQuery } from "hooks/useQuery";
-import RBoard from "/images/Rboard.png";
-import ESP32 from "/images/ESP32.png";
-import { Log } from "components/log";
-import { SourceCodeTab } from "components/SourceCodeTab";
-import { ControlButton } from "components/ControlButton";
-import { CompilerSelector } from "components/CompilerSelector";
-import { Version, useVersions } from "hooks/useVersions";
-import { useCompile } from "hooks/useCompile";
-import { CompileStatusCard } from "components/CompileStatusCard";
 import { useTranslation } from "react-i18next";
 import { UnsupportedBrowserModal } from "components/UnsupportedBrowserModal";
+import ESP32 from "/images/ESP32.png";
+import RBoard from "/images/Rboard.png";
 
 const targets = [
   {
@@ -42,7 +43,16 @@ const targets = [
   },
 ] as const satisfies readonly { title: Target; image: string }[];
 
-const defaultCompilderVersion = "3.2.0" satisfies Version;
+// マイコンに送信可能なコマンド
+const commands = [
+  "version",
+  "clear",
+  "write",
+  "execute",
+  "reset",
+  "help",
+  "showprog",
+] as const;
 
 export const Home = () => {
   const [t, i18n] = useTranslation("ns1");
@@ -65,10 +75,15 @@ export const Home = () => {
       onListen: (buffer) => setLog([...buffer]),
     })
   );
-  const [command, setCommand] = useState("");
+
+  // コマンド入力フィールドのエンターキーで確定された現在の値
+  const [commandValue, setCommandValue] = useState("");
+  // コマンド入力フィールドに現在入力されている文字列
+  const [commandInput, setCommandInput] = useState("");
   const [log, setLog] = useState<string[]>([]);
   const [code, setCode] = useState<Uint8Array>();
   const [autoScroll, setAutoScroll] = useState(true);
+  const [version, setVersion] = useState<Version | undefined>();
   const [versions, getVersionsStatus] = useVersions();
   const [compileStatus, sourceCode, compile] = useCompile(id, setCode);
 
@@ -77,10 +92,36 @@ export const Home = () => {
     console.log(res);
     if (res.isFailure()) {
       alert(
-        `${t("受信中にエラーが発生しました。")}\n${res.error}\ncause: ${res.error.cause}`
+        `${t("受信中にエラーが発生しました。")}\n${res.error}\ncause: ${
+          res.error.cause
+        }`
       );
     }
   }, [t, connector]);
+
+  //１秒ごとに書き込みモードに入ることを試みる
+  const tryEntry = useCallback(async () => {
+    return new Promise<void>((resolve, reject) => {
+      const interval = setInterval(async () => {
+        if (connector.isWriteMode) {
+          clearInterval(interval);
+          resolve();
+          return;
+        } else if (!connector.isConnected) {
+          clearInterval(interval);
+          reject();
+          return;
+        }
+        const res = await connector.tryEnterWriteMode();
+        if (res.isFailure()) {
+          clearInterval(interval);
+          reject();
+          console.error(res);
+          return;
+        }
+      }, 1000);
+    });
+  }, [connector]);
 
   const connect = useCallback(async () => {
     const res = await connector.connect(
@@ -91,25 +132,32 @@ export const Home = () => {
       console.log(res);
       return;
     }
-    await read();
-  }, [t, connector, read]);
+    await Promise.all([read(), tryEntry()]);
+  }, [t, connector, read, tryEntry]);
 
   const disconnect = useCallback(async () => {
     const res = await connector.disconnect();
     if (res.isFailure()) {
       alert(
-        `${t("切断中にエラーが発生しました。")}\n${res.error}\ncause: ${res.error.cause}`
+        `${t("切断中にエラーが発生しました。")}\n${res.error}\ncause: ${
+          res.error.cause
+        }`
       );
     }
   }, [t, connector]);
 
   const send = useCallback(
-    async (text: string) => {
-      const res = await connector.sendCommand(text, { force: true });
+    async (
+      text: string,
+      option?: Parameters<typeof connector.sendCommand>[1]
+    ) => {
+      const res = await connector.sendCommand(text, option);
       console.log(res);
       if (res.isFailure()) {
         alert(
-          `${t("送信中にエラーが発生しました。")}\n${res.error}\ncause: ${res.error.cause}`
+          `${t("送信中にエラーが発生しました。")}\n${res.error}\ncause: ${
+            res.error.cause
+          }`
         );
       }
     },
@@ -122,17 +170,32 @@ export const Home = () => {
     console.log(res);
     if (res.isFailure()) {
       alert(
-        `${t("書き込み中にエラーが発生しました。")}\n${res.error}\ncause: ${res.error.cause}`
+        `${t("書き込み中にエラーが発生しました。")}\n${res.error}\ncause: ${
+          res.error.cause
+        }`
       );
     }
   }, [t, connector, code]);
 
+  const onChangeVersion = useCallback(
+    (version: Version) => {
+      localStorage.setItem("compilerVersion", version);
+      setVersion(version);
+      compile(version);
+    },
+    [compile]
+  );
+
   useEffect(() => {
     if (getVersionsStatus != "success") return;
-    if (!versions.includes(defaultCompilderVersion)) return;
 
-    compile(defaultCompilderVersion);
-  }, [compile, versions, getVersionsStatus]);
+    const version =
+      localStorage.getItem("compilerVersion") ||
+      import.meta.env.VITE_COMPILER_VERSION_FALLBACK;
+    if (!versions.includes(version)) return;
+
+    onChangeVersion(version);
+  }, [versions, getVersionsStatus, onChangeVersion]);
 
   useEffect(() => {
     if (!autoConnectMode) return;
@@ -148,16 +211,15 @@ export const Home = () => {
             console.log(result);
             return;
           }
-
+          tryEntry();
           read();
         });
     };
 
     autoConnect();
-  }, [autoConnectMode, connector, read]);
+  }, [autoConnectMode, connector, read, tryEntry]);
 
   useEffect(() => {
-    console.log("called!");
     const locale = localStorage.getItem("locale");
     if (!locale) return;
 
@@ -222,9 +284,9 @@ export const Home = () => {
               </Typography>
               <CompilerSelector
                 versions={versions.sort()}
-                defaultVersion="3.2.0"
+                version={version || ""}
                 disabled={getVersionsStatus != "success"}
-                onChange={(version) => compile(version)}
+                onChange={onChangeVersion}
                 sx={{ width: "100%" }}
               />
             </Box>
@@ -232,7 +294,12 @@ export const Home = () => {
               status={
                 getVersionsStatus == "error" ? "error" : compileStatus.status
               }
-              error={compileStatus.error}
+              errorName={
+                getVersionsStatus == "error"
+                  ? "fetching versions failed"
+                  : compileStatus.errorName
+              }
+              errorBody={compileStatus.errorBody}
             />
           </Sheet>
 
@@ -394,7 +461,7 @@ export const Home = () => {
             <ControlButton
               label={t("実行")}
               icon={<FlagIcon />}
-              onClick={() => send("execute")}
+              onClick={() => send("execute", { ignoreResponse: true })}
               disabled={!connector.isWriteMode}
               color="success"
             />
@@ -413,8 +480,33 @@ export const Home = () => {
               justifyContent: "right",
             }}
           >
-            <Input type="text" onChange={(e) => setCommand(e.target.value)} />
-            <Input type="submit" onClick={() => send(command)} value="Send" />
+            <Autocomplete
+              placeholder={t("コマンド")}
+              options={commands}
+              variant="plain"
+              color="neutral"
+              value={commandValue}
+              inputValue={commandInput}
+              onChange={(_, v) => setCommandValue(v ?? "")}
+              onInputChange={(_, v) => setCommandInput(v ?? "")}
+              autoHighlight
+              autoComplete
+              freeSolo
+              sx={{
+                borderRadius: "0",
+                borderBottom: "solid",
+                borderWidth: "1px",
+                borderColor: "rgba(0, 0, 0, 0.42)",
+                width: "12rem",
+              }}
+            />
+            <Input
+              type="submit"
+              onClick={() =>
+                send(commandInput, { force: true, ignoreResponse: true })
+              }
+              value="Send"
+            />
           </Box>
         </Box>
       </Box>

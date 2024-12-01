@@ -1,9 +1,9 @@
-import { AppBar, Box, Link, Toolbar } from "@mui/material";
-import { Button, Sheet } from "@mui/joy";
 import { GitHub, Translate } from "@mui/icons-material";
-import icon from "/images/logo.png";
-import { useTranslation } from "react-i18next";
+import { Button, Sheet } from "@mui/joy";
+import { AppBar, Box, Link, Toolbar } from "@mui/material";
 import { useCallback, useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import icon from "/images/logo.png";
 
 export const Header = () => {
   const [t, i18n] = useTranslation();
@@ -84,11 +84,12 @@ export const Header = () => {
           }}
         >
           <Link
-            href={import.meta.env.VITE_BASE_URL}
+            href={import.meta.env.VITE_REFERENCE_URL}
             variant="body1"
             underline="none"
             color="inherit"
             fontFamily="'M PLUS Rounded 1c', sans-serif"
+            target="_blank"
             sx={{
               ":hover": { color: "inherit" },
             }}

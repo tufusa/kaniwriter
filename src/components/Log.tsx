@@ -1,6 +1,6 @@
 import { Sheet, Typography } from "@mui/joy";
-import { useRef, useEffect } from "react";
 import { ansiToJson } from "anser";
+import { useEffect, useRef } from "react";
 
 export const Log = (props: { log: string[]; autoScroll: boolean }) => {
   const scrollRef = useRef<HTMLDivElement>(null);

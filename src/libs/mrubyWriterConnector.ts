@@ -1,5 +1,5 @@
 import { WritableStreamDefaultWriter } from "stream/web";
-import { Result, Success, Failure } from "./result";
+import { Failure, Result, Success } from "./result";
 
 export const targets = ["ESP32", "RBoard"] as const;
 export type Target = (typeof targets)[number];
@@ -9,22 +9,22 @@ type Listener = (buffer: string[]) => void;
 
 type Reader = ReadableStreamDefaultReader<Uint8Array>;
 type Writer = WritableStreamDefaultWriter<Uint8Array>;
-type Event = "AttemptToEnterWriteMode" | "SuccessToExitWriteMode";
+type Event = "SuccessToEnterWriteMode" | "SuccessToExitWriteMode";
 type Job = { job: Promise<Result<unknown, Error>>; description: string };
 
 const baudRates: Record<Target, number> = {
   ESP32: 115200,
   RBoard: 19200,
 } as const;
-
+//TODO: 将来的にはボードごとに異なるキーワードを使わないようにする
 const enterWriteModeKeyword: Record<Target, RegExp> = {
-  ESP32: /mrubyc-esp32: Please push Enter key x 2 to mrbwite mode/,
-  RBoard: /mruby\/c v\d.\d start./,
+  ESP32: /\+OK mruby\/c/,
+  RBoard: /\+OK mruby\/c/,
 } as const;
 
 const exitWriteModeKeyword: Record<Target, RegExp> = {
   ESP32: /mrubyc-esp32: End mrbwrite mode/,
-  RBoard: /\+OK Execute mruby\/c./,
+  RBoard: /\+OK Execute mruby\/c\./,
 } as const;
 
 export class MrubyWriterConnector {
@@ -198,7 +198,7 @@ export class MrubyWriterConnector {
 
   async sendCommand(
     command: string,
-    option?: { force: boolean }
+    option?: Partial<{ force: boolean; ignoreResponse: boolean }>
   ): Promise<Result<string, Error>> {
     if (!this.port) {
       return Failure.error("No port.");
@@ -208,16 +208,36 @@ export class MrubyWriterConnector {
     }
 
     await this.completeJobs();
-
     this.handleText(`\r\n> ${command}\r\n`);
     console.log("Send", { command });
 
-    return this.sendData(this.encoder.encode(`${command}\r\n`));
+    return this.sendData(this.encoder.encode(`${command}\r\n`), {
+      ignoreResponse: option?.ignoreResponse,
+    });
+  }
+
+  async tryEnterWriteMode(): Promise<Result<string, Error>> {
+    if (!this.port) {
+      return Failure.error("No port.");
+    }
+    if (this._writeMode) {
+      return Failure.error("Already write mode.");
+    }
+
+    await this.completeJobs();
+    this.handleText(
+      `\r\n\u001b[32m> try to enter command mode...\u001b[0m\r\n`
+    );
+
+    // 改行文字(CRLF)のみを送信
+    return this.sendData(this.encoder.encode("\r\n"), {
+      ignoreResponse: true,
+    });
   }
 
   async writeCode(
     binary: Uint8Array,
-    option?: { execute: boolean }
+    option?: Partial<{ execute: boolean }>
   ): Promise<Result<null, Error>> {
     if (!this.port) {
       return Failure.error("No port.");
@@ -245,41 +265,41 @@ export class MrubyWriterConnector {
     return Success.value(null);
   }
 
-  private async sendData(chunk: Uint8Array): Promise<Result<string, Error>> {
+  private async sendData(
+    chunk: Uint8Array,
+    option?: Partial<{ ignoreResponse: boolean }>
+  ): Promise<Result<string, Error>> {
     if (!this.port) {
       return Failure.error("No port.");
     }
 
     const send = async (): Promise<Result<string, Error>> => {
-      const readerRes = this.getSubReader();
       const writerRes = this.getWriter();
-      if (readerRes.isFailure()) {
-        return readerRes;
-      }
       if (writerRes.isFailure()) {
         return writerRes;
       }
 
-      this.currentSubReader = readerRes.value;
       const writer = writerRes.value;
 
       const request = await this.write(writer, chunk);
+      writer.releaseLock();
       if (request.isFailure()) {
         return request;
       }
-
+      if (option?.ignoreResponse) {
+        return Success.value("");
+      }
+      const readerRes = this.getSubReader();
+      if (readerRes.isFailure()) {
+        return readerRes;
+      }
+      this.currentSubReader = readerRes.value;
       const response = await this.readLine(this.currentSubReader);
+      this.currentSubReader.releaseLock();
+
       if (response.isFailure()) {
         return response;
       }
-      if (!response.value.startsWith("+")) {
-        return Failure.error("Failed to enter write mode.", {
-          cause: response,
-        });
-      }
-
-      this.currentSubReader.releaseLock();
-      writer.releaseLock();
 
       return response;
     };
@@ -374,8 +394,8 @@ export class MrubyWriterConnector {
   private async handleEvent(
     event: Event | null
   ): Promise<Result<null, Error> | null> {
-    if (event === "AttemptToEnterWriteMode") {
-      return this.onAttemptEnterWriteMode();
+    if (event === "SuccessToEnterWriteMode") {
+      return this.onEnterWriteMode();
     }
     if (event === "SuccessToExitWriteMode") {
       return this.onExitWriteMode();
@@ -385,7 +405,7 @@ export class MrubyWriterConnector {
 
   private detectEvent(text: string): Success<{ event: Event | null }> {
     if (this.target && text.match(enterWriteModeKeyword[this.target])) {
-      return Success.value({ event: "AttemptToEnterWriteMode" });
+      return Success.value({ event: "SuccessToEnterWriteMode" });
     }
     if (this.target && text.match(exitWriteModeKeyword[this.target])) {
       return Success.value({ event: "SuccessToExitWriteMode" });
@@ -393,8 +413,7 @@ export class MrubyWriterConnector {
 
     return Success.value({ event: null });
   }
-
-  private async onAttemptEnterWriteMode(): Promise<Result<null, Error>> {
+  private async onEnterWriteMode(): Promise<Result<null, Error>> {
     if (!this.port) {
       return Failure.error("No port.");
     }
@@ -407,26 +426,8 @@ export class MrubyWriterConnector {
     if (!this.port.writable) {
       return Failure.error("Cannot write serial port.");
     }
-
-    const enter = async (): Promise<Result<null, Error>> => {
-      const response = await this.sendData(this.encoder.encode("\r\n\r\n"));
-      if (response.isFailure()) {
-        return response;
-      }
-      if (!response.value.includes("+OK mruby/c")) {
-        return Failure.error("Cannot enter write mode");
-      }
-
-      this._writeMode = true;
-      return Success.value(null);
-    };
-
-    const enterJob = enter();
-    this.jobQueue.push({
-      job: enterJob,
-      description: "attempt to enter write mode",
-    });
-    return await enterJob;
+    this._writeMode = true;
+    return Success.value(null);
   }
 
   private async onExitWriteMode(): Promise<Success<null>> {

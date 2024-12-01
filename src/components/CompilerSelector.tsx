@@ -1,11 +1,11 @@
-import { Select, Option } from "@mui/joy";
+import { Option, Select } from "@mui/joy";
 import { SxProps } from "@mui/joy/styles/types";
 import { Version } from "hooks/useVersions";
 import { useTranslation } from "react-i18next";
 
 type Props = {
   versions: Version[];
-  defaultVersion: string;
+  version: string;
   disabled?: boolean;
   onChange?: (version: Version) => void;
   sx?: SxProps;
@@ -13,7 +13,7 @@ type Props = {
 
 export const CompilerSelector = ({
   versions,
-  defaultVersion,
+  version,
   disabled,
   onChange,
   sx,
@@ -29,7 +29,7 @@ export const CompilerSelector = ({
           onChange(value);
         }
       }}
-      defaultValue={defaultVersion}
+      value={version}
       sx={{
         pl: "1rem",
         ...sx,
