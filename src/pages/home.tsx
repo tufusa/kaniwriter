@@ -74,7 +74,10 @@ export const Home = () => {
       onListen: (buffer) => setLog([...buffer]),
     })
   );
+
+  // コマンド入力フィールドのエンターキーで確定された現在の値
   const [commandValue, setCommandValue] = useState("");
+  // コマンド入力フィールドに現在入力されている文字列
   const [commandInput, setCommandInput] = useState("");
   const [log, setLog] = useState<string[]>([]);
   const [code, setCode] = useState<Uint8Array>();
@@ -477,8 +480,8 @@ export const Home = () => {
               options={commands}
               variant="plain"
               color="neutral"
-              value={commandValue} // エンターキーで確定されたフィールドの現在の値
-              inputValue={commandInput} // フィールドに現在入力されている文字列
+              value={commandValue}
+              inputValue={commandInput}
               onChange={(_, v) => setCommandValue(v ?? "")}
               onInputChange={(_, v) => setCommandInput(v ?? "")}
               autoHighlight
