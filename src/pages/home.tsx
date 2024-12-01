@@ -74,7 +74,8 @@ export const Home = () => {
       onListen: (buffer) => setLog([...buffer]),
     })
   );
-  const [command, setCommand] = useState("");
+  const [commandValue, setCommandValue] = useState("");
+  const [commandInput, setCommandInput] = useState("");
   const [log, setLog] = useState<string[]>([]);
   const [code, setCode] = useState<Uint8Array>();
   const [autoScroll, setAutoScroll] = useState(true);
@@ -468,8 +469,10 @@ export const Home = () => {
               options={commands}
               variant="plain"
               color="neutral"
-              onChange={(_, v) => setCommand(v as string)}
-              defaultValue=""
+              value={commandValue} // エンターキーで確定されたフィールドの現在の値
+              inputValue={commandInput} // フィールドに現在入力されている文字列
+              onChange={(_, v) => setCommandValue(v ?? "")}
+              onInputChange={(_, v) => setCommandInput(v ?? "")}
               autoHighlight
               autoComplete
               freeSolo
@@ -484,7 +487,7 @@ export const Home = () => {
             <Input
               type="submit"
               onClick={() =>
-                send(command, { force: true, ignoreResponse: true })
+                send(commandInput, { force: true, ignoreResponse: true })
               }
               value="Send"
             />
