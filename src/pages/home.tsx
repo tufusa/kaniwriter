@@ -88,7 +88,9 @@ export const Home = () => {
     console.log(res);
     if (res.isFailure()) {
       alert(
-        `${t("受信中にエラーが発生しました。")}\n${res.error}\ncause: ${res.error.cause}`
+        `${t("受信中にエラーが発生しました。")}\n${res.error}\ncause: ${
+          res.error.cause
+        }`
       );
     }
   }, [t, connector]);
@@ -133,7 +135,9 @@ export const Home = () => {
     const res = await connector.disconnect();
     if (res.isFailure()) {
       alert(
-        `${t("切断中にエラーが発生しました。")}\n${res.error}\ncause: ${res.error.cause}`
+        `${t("切断中にエラーが発生しました。")}\n${res.error}\ncause: ${
+          res.error.cause
+        }`
       );
     }
   }, [t, connector]);
@@ -147,7 +151,9 @@ export const Home = () => {
       console.log(res);
       if (res.isFailure()) {
         alert(
-          `${t("送信中にエラーが発生しました。")}\n${res.error}\ncause: ${res.error.cause}`
+          `${t("送信中にエラーが発生しました。")}\n${res.error}\ncause: ${
+            res.error.cause
+          }`
         );
       }
     },
@@ -160,7 +166,9 @@ export const Home = () => {
     console.log(res);
     if (res.isFailure()) {
       alert(
-        `${t("書き込み中にエラーが発生しました。")}\n${res.error}\ncause: ${res.error.cause}`
+        `${t("書き込み中にエラーが発生しました。")}\n${res.error}\ncause: ${
+          res.error.cause
+        }`
       );
     }
   }, [t, connector, code]);
