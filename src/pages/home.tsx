@@ -72,9 +72,6 @@ export const Home = () => {
   const [versions, getVersionsStatus] = useVersions();
   const [compileStatus, sourceCode, compile] = useCompile(id, setCode);
 
-  // 対応するブラウザかの判定(対応してればtrue)
-  const [supported, setsupported] = useState(false);
-
   const read = useCallback(async () => {
     const res = await connector.startListen();
     console.log(res);
@@ -168,9 +165,7 @@ export const Home = () => {
   }, [i18n]);
 
   // WebSerialAPIに対応するブラウザかどうかを確認する
-  useEffect(() => {
-    setsupported(("serial" in navigator));
-  }, [])
+  const supported = "serial" in navigator;
 
   return (
     <>
