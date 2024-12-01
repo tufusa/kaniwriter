@@ -92,6 +92,30 @@ export const Home = () => {
     }
   }, [t, connector]);
 
+  //１秒ごとに書き込みモードに入ることを試みる
+  const tryEntry = useCallback(async () => {
+    return new Promise<void>((resolve, reject) => {
+      const interval = setInterval(async () => {
+        if (connector.isWriteMode) {
+          clearInterval(interval);
+          resolve();
+          return;
+        } else if (!connector.isConnected) {
+          clearInterval(interval);
+          reject();
+          return;
+        }
+        const res = await connector.tryEnterWriteMode();
+        if (res.isFailure()) {
+          clearInterval(interval);
+          reject();
+          console.error(res);
+          return;
+        }
+      }, 1000);
+    });
+  }, [connector]);
+
   const connect = useCallback(async () => {
     const res = await connector.connect(
       async () => await navigator.serial.requestPort()
@@ -101,8 +125,8 @@ export const Home = () => {
       console.log(res);
       return;
     }
-    await read();
-  }, [t, connector, read]);
+    await Promise.all([read(), tryEntry()]);
+  }, [t, connector, read, tryEntry]);
 
   const disconnect = useCallback(async () => {
     const res = await connector.disconnect();
@@ -114,8 +138,11 @@ export const Home = () => {
   }, [t, connector]);
 
   const send = useCallback(
-    async (text: string) => {
-      const res = await connector.sendCommand(text, { force: true });
+    async (
+      text: string,
+      option?: Parameters<typeof connector.sendCommand>[1]
+    ) => {
+      const res = await connector.sendCommand(text, option);
       console.log(res);
       if (res.isFailure()) {
         alert(
@@ -171,13 +198,13 @@ export const Home = () => {
             console.log(result);
             return;
           }
-
+          tryEntry();
           read();
         });
     };
 
     autoConnect();
-  }, [autoConnectMode, connector, read]);
+  }, [autoConnectMode, connector, read, tryEntry]);
 
   useEffect(() => {
     const locale = localStorage.getItem("locale");
@@ -417,7 +444,7 @@ export const Home = () => {
             <ControlButton
               label={t("実行")}
               icon={<FlagIcon />}
-              onClick={() => send("execute")}
+              onClick={() => send("execute", { ignoreResponse: true })}
               disabled={!connector.isWriteMode}
               color="success"
             />
@@ -454,7 +481,13 @@ export const Home = () => {
                 width: "12rem",
               }}
             />
-            <Input type="submit" onClick={() => send(command)} value="Send" />
+            <Input
+              type="submit"
+              onClick={() =>
+                send(command, { force: true, ignoreResponse: true })
+              }
+              value="Send"
+            />
           </Box>
         </Box>
       </Box>
