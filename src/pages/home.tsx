@@ -74,7 +74,11 @@ export const Home = () => {
       onListen: (buffer) => setLog([...buffer]),
     })
   );
-  const [command, setCommand] = useState("");
+
+  // コマンド入力フィールドのエンターキーで確定された現在の値
+  const [commandValue, setCommandValue] = useState("");
+  // コマンド入力フィールドに現在入力されている文字列
+  const [commandInput, setCommandInput] = useState("");
   const [log, setLog] = useState<string[]>([]);
   const [code, setCode] = useState<Uint8Array>();
   const [autoScroll, setAutoScroll] = useState(true);
@@ -87,7 +91,9 @@ export const Home = () => {
     console.log(res);
     if (res.isFailure()) {
       alert(
-        `${t("受信中にエラーが発生しました。")}\n${res.error}\ncause: ${res.error.cause}`
+        `${t("受信中にエラーが発生しました。")}\n${res.error}\ncause: ${
+          res.error.cause
+        }`
       );
     }
   }, [t, connector]);
@@ -132,7 +138,9 @@ export const Home = () => {
     const res = await connector.disconnect();
     if (res.isFailure()) {
       alert(
-        `${t("切断中にエラーが発生しました。")}\n${res.error}\ncause: ${res.error.cause}`
+        `${t("切断中にエラーが発生しました。")}\n${res.error}\ncause: ${
+          res.error.cause
+        }`
       );
     }
   }, [t, connector]);
@@ -146,7 +154,9 @@ export const Home = () => {
       console.log(res);
       if (res.isFailure()) {
         alert(
-          `${t("送信中にエラーが発生しました。")}\n${res.error}\ncause: ${res.error.cause}`
+          `${t("送信中にエラーが発生しました。")}\n${res.error}\ncause: ${
+            res.error.cause
+          }`
         );
       }
     },
@@ -159,7 +169,9 @@ export const Home = () => {
     console.log(res);
     if (res.isFailure()) {
       alert(
-        `${t("書き込み中にエラーが発生しました。")}\n${res.error}\ncause: ${res.error.cause}`
+        `${t("書き込み中にエラーが発生しました。")}\n${res.error}\ncause: ${
+          res.error.cause
+        }`
       );
     }
   }, [t, connector, code]);
@@ -468,8 +480,10 @@ export const Home = () => {
               options={commands}
               variant="plain"
               color="neutral"
-              onChange={(_, v) => setCommand(v as string)}
-              defaultValue=""
+              value={commandValue}
+              inputValue={commandInput}
+              onChange={(_, v) => setCommandValue(v ?? "")}
+              onInputChange={(_, v) => setCommandInput(v ?? "")}
               autoHighlight
               autoComplete
               freeSolo
@@ -484,7 +498,7 @@ export const Home = () => {
             <Input
               type="submit"
               onClick={() =>
-                send(command, { force: true, ignoreResponse: true })
+                send(commandInput, { force: true, ignoreResponse: true })
               }
               value="Send"
             />
