@@ -21,12 +21,13 @@ export const UnsupportedBrowserModal = ({
         minWidth: "500px",
         m: "auto",
         alignContent: "center",
+        maxWidth: "60rem",
       }}
     >
       <Sheet variant="outlined" sx={{ borderRadius: "0.5rem" }}>
         <Typography
           fontFamily="'M PLUS Rounded 1c', sans-serif"
-          variant="h4"
+          variant="h5"
           m={1}
           alignItems="center"
         >
