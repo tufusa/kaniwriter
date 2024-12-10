@@ -226,12 +226,9 @@ export const Home = () => {
     i18n.changeLanguage(locale);
   }, [i18n]);
 
-  // WebSerialAPIに対応するブラウザかどうかを確認する
-  const supported = "serial" in navigator;
-
   return (
     <>
-      {!supported && <UnsupportedBrowserModal />}
+      <UnsupportedBrowserModal />
       <Box
         sx={{
           mb: "0.5rem",

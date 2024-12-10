@@ -2,11 +2,11 @@ import { Modal, ModalClose, Sheet } from "@mui/joy";
 import { Typography } from "@mui/material";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-
+// WebSerialAPIに対応するブラウザかどうかを確認して対応してなかったら警告を出す
 export const UnsupportedBrowserModal = () => {
-  const [open, setOpen] = useState(true);
+  const supported = "serial" in navigator;
+  const [open, setOpen] = useState(!supported);
   const [t] = useTranslation();
-
   return (
     <Modal
       open={open}
@@ -20,20 +20,20 @@ export const UnsupportedBrowserModal = () => {
     >
       <Sheet variant="outlined" sx={{ borderRadius: "0.5rem" }}>
         <Typography
-          fontFamily={"'M PLUS Rounded 1c', sans-serif"}
+          fontFamily="'M PLUS Rounded 1c', sans-serif"
           variant="h4"
           m={1}
-          alignItems={"center"}
+          alignItems="center"
         >
           {t("このブラウザはサポートされていません")}
         </Typography>
         <ModalClose variant="plain" sx={{ m: 0.5 }} />
 
         <Typography
-          fontFamily={"'M PLUS Rounded 1c', sans-serif"}
+          fontFamily="'M PLUS Rounded 1c', sans-serif"
           fontSize="sm"
-          m={"0.5rem"}
-          whiteSpace={"pre-line"}
+          m="0.5rem"
+          whiteSpace="pre-line"
         >
           {t("対応するブラウザを使ってください")}
         </Typography>
