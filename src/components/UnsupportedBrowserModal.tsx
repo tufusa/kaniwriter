@@ -2,10 +2,14 @@ import { Modal, ModalClose, Sheet } from "@mui/joy";
 import { Typography } from "@mui/material";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-// WebSerialAPIに対応するブラウザかどうかを確認して対応してなかったら警告を出す
-export const UnsupportedBrowserModal = () => {
-  const supported = "serial" in navigator;
-  const [open, setOpen] = useState(!supported);
+interface UnsupportedBrowserModalProps {
+  defaultOpen: boolean;
+}
+
+export const UnsupportedBrowserModal = ({
+  defaultOpen,
+}: UnsupportedBrowserModalProps) => {
+  const [open, setOpen] = useState(defaultOpen);
   const [t] = useTranslation();
   return (
     <Modal
