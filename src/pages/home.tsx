@@ -102,19 +102,6 @@ export const Home = () => {
   }, [t, connector]);
 
   const crc8 = useCrc8(code);
-  // const verifyCode = useCallback(
-  //   async (hash: number) => {
-  //     console.log("code: " + code);
-  //     if (!code) return;
-  //     console.log("crc8: " + crc8);
-  //     if (crc8 == hash) {
-  //       return true;
-  //     } else {
-  //       return false;
-  //     }
-  //   },
-  //   [code, crc8]
-  // );
   //１秒ごとに書き込みモードに入ることを試みる
   const tryEntry = useCallback(async () => {
     return new Promise<void>((resolve, reject) => {
@@ -178,7 +165,6 @@ export const Home = () => {
       }
       if (text == "verify" && res.isSuccess() && res.value.includes("+OK")) {
         const hash = parseInt(res.value.split(" ")[1], 16);
-        //const result = await verifyCode(hash);
         if (crc8 !== undefined) connector.verify(crc8, hash);
       }
     },
@@ -478,7 +464,7 @@ export const Home = () => {
             <ControlButton
               label={t("検証")}
               icon={<Plagiarism />}
-              onClick={() => send("verify", { ignoreResponse: false })}
+              onClick={() => send("verify")}
               disabled={
                 compileStatus.status !== "success" || !connector.isWriteMode
               }
