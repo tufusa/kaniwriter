@@ -1,5 +1,6 @@
 import { WritableStreamDefaultWriter } from "stream/web";
 import { Failure, Result, Success } from "./result";
+import { crc8Calculator } from "../utils/crc8Calculator";
 
 export const targets = ["ESP32", "RBoard"] as const;
 export type Target = (typeof targets)[number];
@@ -238,7 +239,7 @@ export class MrubyWriterConnector {
   async writeCode(
     binary: Uint8Array,
     option?: Partial<{ execute: boolean }>
-  ): Promise<Result<null, Error>> {
+  ): Promise<Result<string, Error>> {
     if (!this.port) {
       return Failure.error("No port.");
     }
@@ -262,7 +263,10 @@ export class MrubyWriterConnector {
       await this.sendCommand("execute");
     }
 
-    return Success.value(null);
+    const crc = crc8Calculator(binary);
+    const crcRes = writeRes.value.split("+OK")[1];
+    if (crc !== undefined) this.verify(crc, parseInt(crcRes, 16));
+    return Success.value(writeRes.value);
   }
 
   private async sendData(
@@ -492,11 +496,13 @@ export class MrubyWriterConnector {
 
     return Success.value(line);
   }
-  async verify(verifyResult: boolean) {
-    if (verifyResult) {
+  async verify(culcHash: number, retHash: number) {
+    if (culcHash === retHash) {
       this.handleText("\r\n Verify Success\r\n");
+      return true;
     } else {
       this.handleText("\r\n Verify Failed\r\n");
+      return false;
     }
   }
 }

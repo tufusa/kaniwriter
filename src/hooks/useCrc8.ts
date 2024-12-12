@@ -1,23 +1,8 @@
 import { useMemo } from "react";
+import { crc8Calculator } from "../utils/crc8Calculator";
 
 export const useCrc8 = (data?: Uint8Array) => {
-  const crc8 = useMemo(
-    () =>
-      data?.reduce((crc, byte) => {
-        const poly = 0x31;
-        crc ^= byte;
-        for (let i = 0; i < 8; i++) {
-          if (crc & 0x80) {
-            crc = (crc << 1) ^ poly;
-          } else {
-            crc = crc << 1;
-          }
-        }
-        crc &= 0xff;
-        return crc;
-      }, 0xff),
-    [data]
-  );
+  const crc8 = useMemo(() => crc8Calculator(data), [data]);
 
   return crc8;
 };

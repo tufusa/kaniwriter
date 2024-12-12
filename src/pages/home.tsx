@@ -4,6 +4,7 @@ import {
   Flag as FlagIcon,
   Usb as UsbIcon,
   UsbOff as UsbOffIcon,
+  Plagiarism,
 } from "@mui/icons-material";
 import {
   Autocomplete,
@@ -30,6 +31,7 @@ import { isTarget } from "libs/utility";
 import { useTranslation } from "react-i18next";
 import ESP32 from "/images/ESP32.png";
 import RBoard from "/images/Rboard.png";
+import { useCrc8 } from "../hooks/useCrc8";
 
 const targets = [
   {
@@ -99,6 +101,20 @@ export const Home = () => {
     }
   }, [t, connector]);
 
+  const crc8 = useCrc8(code);
+  // const verifyCode = useCallback(
+  //   async (hash: number) => {
+  //     console.log("code: " + code);
+  //     if (!code) return;
+  //     console.log("crc8: " + crc8);
+  //     if (crc8 == hash) {
+  //       return true;
+  //     } else {
+  //       return false;
+  //     }
+  //   },
+  //   [code, crc8]
+  // );
   //１秒ごとに書き込みモードに入ることを試みる
   const tryEntry = useCallback(async () => {
     return new Promise<void>((resolve, reject) => {
@@ -160,17 +176,13 @@ export const Home = () => {
           }`
         );
       }
-      if (text == "verify") {
-        if (res.isSuccess() && res.value.includes("+OK")) {
-          //マイコンから帰ってくるハッシュ値だけを取り出す
-          const hash = res.value.split("+OK ")[1].split("\r\n")[0];
-          const result = await verifyCode(parseInt(hash, 16));
-          console.log("Verify Result: " + result);
-          if (result != undefined) connector.verify(result);
-        }
+      if (text == "verify" && res.isSuccess() && res.value.includes("+OK")) {
+        const hash = parseInt(res.value.split(" ")[1], 16);
+        //const result = await verifyCode(hash);
+        if (crc8 !== undefined) connector.verify(crc8, hash);
       }
     },
-    [t, connector, verifyCode]
+    [t, connector, crc8]
   );
 
   const writeCode = useCallback(async () => {
@@ -459,6 +471,14 @@ export const Home = () => {
               label={t("書き込み")}
               icon={<EditIcon />}
               onClick={writeCode}
+              disabled={
+                compileStatus.status !== "success" || !connector.isWriteMode
+              }
+            />
+            <ControlButton
+              label={t("検証")}
+              icon={<Plagiarism />}
+              onClick={() => send("verify", { ignoreResponse: false })}
               disabled={
                 compileStatus.status !== "success" || !connector.isWriteMode
               }
