@@ -1,6 +1,6 @@
+import Base64 from "base64-js";
 import { useCallback, useState } from "react";
 import { Version } from "./useVersions";
-import Base64 from "base64-js";
 
 export type CompileStatus = {
   status: "idle" | "compile" | "success" | "error";

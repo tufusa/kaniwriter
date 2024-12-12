@@ -1,36 +1,36 @@
-import { useCallback, useEffect, useState } from "react";
+import {
+  CheckCircleRounded as CheckCircleRoundedIcon,
+  Edit as EditIcon,
+  Flag as FlagIcon,
+  Usb as UsbIcon,
+  UsbOff as UsbOffIcon,
+} from "@mui/icons-material";
 import {
   Autocomplete,
   Box,
   FormLabel,
   Radio,
-  radioClasses,
   RadioGroup,
   Sheet,
+  radioClasses,
 } from "@mui/joy";
 import { Checkbox, FormControlLabel, Input, Typography } from "@mui/material";
-import {
-  Flag as FlagIcon,
-  Usb as UsbIcon,
-  Edit as EditIcon,
-  UsbOff as UsbOffIcon,
-  CheckCircleRounded as CheckCircleRoundedIcon,
-} from "@mui/icons-material";
+import { useCallback, useEffect, useState } from "react";
 
-import { MrubyWriterConnector, Target } from "libs/mrubyWriterConnector";
-import { isTarget } from "libs/utility";
-import { useQuery } from "hooks/useQuery";
-import RBoard from "/images/Rboard.png";
-import ESP32 from "/images/ESP32.png";
+import { CompileStatusCard } from "components/CompileStatusCard";
+import { CompilerSelector } from "components/CompilerSelector";
+import { ControlButton } from "components/ControlButton";
 import { Log } from "components/Log";
 import { SourceCodeTab } from "components/SourceCodeTab";
-import { ControlButton } from "components/ControlButton";
-import { CompilerSelector } from "components/CompilerSelector";
-import { Version, useVersions } from "hooks/useVersions";
 import { useCompile } from "hooks/useCompile";
-import { CompileStatusCard } from "components/CompileStatusCard";
+import { useQuery } from "hooks/useQuery";
+import { Version, useVersions } from "hooks/useVersions";
+import { MrubyWriterConnector, Target } from "libs/mrubyWriterConnector";
+import { isTarget } from "libs/utility";
 import { useTranslation } from "react-i18next";
-import { useCrc8 } from "hooks/useCrc8";
+import ESP32 from "/images/ESP32.png";
+import RBoard from "/images/Rboard.png";
+
 const targets = [
   {
     title: "RBoard",
@@ -75,7 +75,11 @@ export const Home = () => {
       onListen: (buffer) => setLog([...buffer]),
     })
   );
-  const [command, setCommand] = useState("");
+
+  // コマンド入力フィールドのエンターキーで確定された現在の値
+  const [commandValue, setCommandValue] = useState("");
+  // コマンド入力フィールドに現在入力されている文字列
+  const [commandInput, setCommandInput] = useState("");
   const [log, setLog] = useState<string[]>([]);
   const [code, setCode] = useState<Uint8Array>();
   const [autoScroll, setAutoScroll] = useState(true);
@@ -88,31 +92,17 @@ export const Home = () => {
     console.log(res);
     if (res.isFailure()) {
       alert(
-        `${t("受信中にエラーが発生しました。")}\n${res.error}\ncause: ${res.error.cause}`
+        `${t("受信中にエラーが発生しました。")}\n${res.error}\ncause: ${
+          res.error.cause
+        }`
       );
     }
   }, [t, connector]);
 
-  const crc8 = useCrc8(code);
-  const verifyCode = useCallback(
-    async (hash: number) => {
-      console.log("code: " + code);
-      if (!code) return;
-      console.log("crc8: " + crc8);
-      if (crc8 == hash) {
-        return true;
-      } else {
-        return false;
-      }
-    },
-    [code, crc8]
-  );
-  //切断せずにもう一度書き込もうとするときに動くようにする
-  const entry = useCallback(async () => {
+  //１秒ごとに書き込みモードに入ることを試みる
+  const tryEntry = useCallback(async () => {
     return new Promise<void>((resolve, reject) => {
       const interval = setInterval(async () => {
-        console.log("entry");
-        console.error(connector.isWriteMode, connector.isConnected);
         if (connector.isWriteMode) {
           clearInterval(interval);
           resolve();
@@ -122,11 +112,7 @@ export const Home = () => {
           reject();
           return;
         }
-        //CRLFを送信
-        const res = await connector.sendCommand("", {
-          force: true,
-          ignoreResponse: true,
-        });
+        const res = await connector.tryEnterWriteMode();
         if (res.isFailure()) {
           clearInterval(interval);
           reject();
@@ -146,14 +132,16 @@ export const Home = () => {
       console.log(res);
       return;
     }
-    await Promise.all([read(), entry()]);
-  }, [t, connector, read, entry]);
+    await Promise.all([read(), tryEntry()]);
+  }, [t, connector, read, tryEntry]);
 
   const disconnect = useCallback(async () => {
     const res = await connector.disconnect();
     if (res.isFailure()) {
       alert(
-        `${t("切断中にエラーが発生しました。")}\n${res.error}\ncause: ${res.error.cause}`
+        `${t("切断中にエラーが発生しました。")}\n${res.error}\ncause: ${
+          res.error.cause
+        }`
       );
     }
   }, [t, connector]);
@@ -167,7 +155,9 @@ export const Home = () => {
       console.log(res);
       if (res.isFailure()) {
         alert(
-          `${t("送信中にエラーが発生しました。")}\n${res.error}\ncause: ${res.error.cause}`
+          `${t("送信中にエラーが発生しました。")}\n${res.error}\ncause: ${
+            res.error.cause
+          }`
         );
       }
       if (text == "verify") {
@@ -189,7 +179,9 @@ export const Home = () => {
     console.log(res);
     if (res.isFailure()) {
       alert(
-        `${t("書き込み中にエラーが発生しました。")}\n${res.error}\ncause: ${res.error.cause}`
+        `${t("書き込み中にエラーが発生しました。")}\n${res.error}\ncause: ${
+          res.error.cause
+        }`
       );
     }
   }, [t, connector, code]);
@@ -228,13 +220,13 @@ export const Home = () => {
             console.log(result);
             return;
           }
-          entry();
+          tryEntry();
           read();
         });
     };
 
     autoConnect();
-  }, [autoConnectMode, connector, read, entry]);
+  }, [autoConnectMode, connector, read, tryEntry]);
 
   useEffect(() => {
     const locale = localStorage.getItem("locale");
@@ -474,7 +466,7 @@ export const Home = () => {
             <ControlButton
               label={t("実行")}
               icon={<FlagIcon />}
-              onClick={() => send("execute",{ignoreResponse:true})}
+              onClick={() => send("execute", { ignoreResponse: true })}
               disabled={!connector.isWriteMode}
               color="success"
             />
@@ -498,8 +490,10 @@ export const Home = () => {
               options={commands}
               variant="plain"
               color="neutral"
-              onChange={(_, v) => setCommand(v as string)}
-              defaultValue=""
+              value={commandValue}
+              inputValue={commandInput}
+              onChange={(_, v) => setCommandValue(v ?? "")}
+              onInputChange={(_, v) => setCommandInput(v ?? "")}
               autoHighlight
               autoComplete
               freeSolo
@@ -511,7 +505,13 @@ export const Home = () => {
                 width: "12rem",
               }}
             />
-            <Input type="submit" onClick={() => send(command,{force:true})} value="Send" />
+            <Input
+              type="submit"
+              onClick={() =>
+                send(commandInput, { force: true, ignoreResponse: true })
+              }
+              value="Send"
+            />
           </Box>
         </Box>
       </Box>

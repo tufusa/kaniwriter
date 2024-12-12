@@ -40,4 +40,6 @@ pnpm build:ceres
 
 ### Authors
 
-see [poporonnet/kcms](https://github.com/poporonnet/kcms?tab=readme-ov-file#authorslicense).
+| <img src="https://github.com/tufusa.png" width=100px /> | <img src="https://github.com/kiharu3112.png" width=100px /> | <img src="https://github.com/Suzune2741.png" width=100px /> | <img src="https://github.com/laminne.png" width=100px /> |
+| :-----------------------------------------------------: | :---------------------------------------------------------: | :---------------------------------------------------------: | :------------------------------------------------------: |
+|                         tufusa                          |                         kiharu3112                          |                         Suzune2741                          |                         laminne                          |
