@@ -164,8 +164,8 @@ export const Home = () => {
         );
       }
       if (text == "verify" && res.isSuccess() && res.value.includes("+OK")) {
-        const hash = parseInt(res.value.split(" ")[1], 16);
-        if (crc8 !== undefined) connector.verify(crc8, hash);
+        const hash = parseInt(res.value.split("+OK")[1], 16);
+        if (crc8 !== undefined && hash!==undefined) connector.verify(crc8, hash);
       }
     },
     [t, connector, crc8]

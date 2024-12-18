@@ -265,7 +265,8 @@ export class MrubyWriterConnector {
 
     const crc = crc8Calculator(binary);
     const crcRes = writeRes.value.split("+OK")[1];
-    if (crc !== undefined) this.verify(crc, parseInt(crcRes, 16));
+    if (crc !== undefined && crcRes !== undefined)
+      this.verify(crc, parseInt(crcRes, 16));
     return Success.value(writeRes.value);
   }
 
