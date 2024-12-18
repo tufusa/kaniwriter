@@ -2,9 +2,9 @@ import {
   CheckCircleRounded as CheckCircleRoundedIcon,
   Edit as EditIcon,
   Flag as FlagIcon,
+  Plagiarism,
   Usb as UsbIcon,
   UsbOff as UsbOffIcon,
-  Plagiarism,
 } from "@mui/icons-material";
 import {
   Autocomplete,
@@ -165,7 +165,8 @@ export const Home = () => {
       }
       if (text == "verify" && res.isSuccess() && res.value.includes("+OK")) {
         const hash = parseInt(res.value.split("+OK")[1], 16);
-        if (crc8 !== undefined && hash!==undefined) connector.verify(crc8, hash);
+        if (crc8 !== undefined && hash !== undefined)
+          connector.verify(crc8, hash);
       }
     },
     [t, connector, crc8]

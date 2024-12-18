@@ -1,6 +1,6 @@
 import { WritableStreamDefaultWriter } from "stream/web";
-import { Failure, Result, Success } from "./result";
 import { crc8Calculator } from "../utils/crc8Calculator";
+import { Failure, Result, Success } from "./result";
 
 export const targets = ["ESP32", "RBoard"] as const;
 export type Target = (typeof targets)[number];
