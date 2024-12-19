@@ -1,5 +1,5 @@
 import { WritableStreamDefaultWriter } from "stream/web";
-import { crc8Calculator } from "../utils/crc8Calculator";
+import { calculateCrc8 } from "../utils/calculateCrc8";
 import { Failure, Result, Success } from "./result";
 
 export const targets = ["ESP32", "RBoard"] as const;
@@ -263,10 +263,16 @@ export class MrubyWriterConnector {
       await this.sendCommand("execute");
     }
 
-    const crc = crc8Calculator(binary);
-    const crcRes = writeRes.value.split("+OK")[1];
-    if (crc !== undefined && crcRes !== undefined)
-      this.verify(crc, parseInt(crcRes, 16));
+    // const crc = calculateCrc8(binary);
+    // const crcRes = writeRes.value.match(/^\+OK (?<hash>[0-9a-fA-F]{2})$/)
+    //   ?.groups?.hash;
+    // if (
+    //   crc !== undefined &&
+    //   crcRes !== undefined &&
+    //   !Number.isNaN(parseInt(crcRes, 16))
+    // ) {
+    //   this.verify(crc, parseInt(crcRes, 16));
+    // }
     return Success.value(writeRes.value);
   }
 
@@ -497,13 +503,18 @@ export class MrubyWriterConnector {
 
     return Success.value(line);
   }
-  async verify(culcHash: number, retHash: number) {
-    if (culcHash === retHash) {
+  async verify(code: Uint8Array) {
+    const crc = calculateCrc8(code);
+    const verifyRes = await this.sendCommand("verify");
+    console.log("Res", verifyRes);
+    if (verifyRes.isFailure()) return verifyRes;
+
+    const crcRes = verifyRes.value.split(" ")[1];
+    console.log({ crc, crcRes });
+    if (crc === parseInt(crcRes, 16)) {
       this.handleText("\r\n Verify Success\r\n");
-      return true;
     } else {
       this.handleText("\r\n Verify Failed\r\n");
-      return false;
     }
   }
 }

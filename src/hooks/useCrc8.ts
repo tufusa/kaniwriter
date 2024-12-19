@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import { crc8Calculator } from "../utils/crc8Calculator";
+import { calculateCrc8 } from "../utils/calculateCrc8";
 
 export const useCrc8 = (data?: Uint8Array) => {
-  return useMemo(() => crc8Calculator(data), [data]);
+  return useMemo(() => calculateCrc8(data), [data]);
 };

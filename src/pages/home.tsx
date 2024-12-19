@@ -31,7 +31,6 @@ import { isTarget } from "libs/utility";
 import { useTranslation } from "react-i18next";
 import ESP32 from "/images/ESP32.png";
 import RBoard from "/images/Rboard.png";
-import { useCrc8 } from "../hooks/useCrc8";
 
 const targets = [
   {
@@ -101,7 +100,6 @@ export const Home = () => {
     }
   }, [t, connector]);
 
-  const crc8 = useCrc8(code);
   //１秒ごとに書き込みモードに入ることを試みる
   const tryEntry = useCallback(async () => {
     return new Promise<void>((resolve, reject) => {
@@ -163,13 +161,8 @@ export const Home = () => {
           }`
         );
       }
-      if (text == "verify" && res.isSuccess() && res.value.includes("+OK")) {
-        const hash = parseInt(res.value.split("+OK")[1], 16);
-        if (crc8 !== undefined && hash !== undefined)
-          connector.verify(crc8, hash);
-      }
     },
-    [t, connector, crc8]
+    [t, connector]
   );
 
   const writeCode = useCallback(async () => {
@@ -465,7 +458,7 @@ export const Home = () => {
             <ControlButton
               label={t("検証")}
               icon={<Plagiarism />}
-              onClick={() => send("verify")}
+              onClick={() => code !== undefined? connector.verify(code): alert("NO CODE")}
               disabled={
                 compileStatus.status !== "success" || !connector.isWriteMode
               }
