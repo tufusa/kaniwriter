@@ -26,5 +26,6 @@
   "エラーの詳細を見る": "Click to view error details",
   "クリックして閉じる": "Click to close",
   "コマンド": "Command",
-  "検証": "Verify"
+  "検証": "Verify",
+  "自動検証": "Auto verify"
 }

@@ -238,7 +238,7 @@ export class MrubyWriterConnector {
 
   async writeCode(
     binary: Uint8Array,
-    option?: Partial<{ execute: boolean }>
+    option?: Partial<{ execute: boolean; autoVerify: boolean }>
   ): Promise<Result<string, Error>> {
     if (!this.port) {
       return Failure.error("No port.");
@@ -258,21 +258,11 @@ export class MrubyWriterConnector {
 
     const writeRes = await this.sendData(binary);
     if (writeRes.isFailure()) return writeRes;
-
+    if (writeRes.value.startsWith("-ERR")) return writeRes;
     if (option?.execute) {
       await this.sendCommand("execute");
     }
-
-    // const crc = calculateCrc8(binary);
-    // const crcRes = writeRes.value.match(/^\+OK (?<hash>[0-9a-fA-F]{2})$/)
-    //   ?.groups?.hash;
-    // if (
-    //   crc !== undefined &&
-    //   crcRes !== undefined &&
-    //   !Number.isNaN(parseInt(crcRes, 16))
-    // ) {
-    //   this.verify(crc, parseInt(crcRes, 16));
-    // }
+    if (option?.autoVerify) await this.verify(binary);
     return Success.value(writeRes.value);
   }
 
@@ -463,25 +453,28 @@ export class MrubyWriterConnector {
     writer: Writer,
     chunk: Uint8Array
   ): Promise<Result<null, Error>> {
-    const divisionSize = 1024;
-    const waitTimeMs = 500;
-    const sleep = (ms: number) =>
-      new Promise((resolve) => setTimeout(resolve, ms));
+    // const divisionSize = 1024;
+    // const waitTimeMs = 500;
+    // const sleep = (ms: number) =>
+    //   new Promise((resolve) => setTimeout(resolve, ms));
 
-    const chunks = new Array(Math.ceil(chunk.length / divisionSize))
-      .fill(null)
-      .map((_, idx) =>
-        chunk.subarray(idx * divisionSize, (idx + 1) * divisionSize)
-      );
+    // const chunks = new Array(Math.ceil(chunk.length / divisionSize))
+    //   .fill(null)
+    //   .map((_, idx) =>
+    //     chunk.subarray(idx * divisionSize, (idx + 1) * divisionSize)
+    //   );
 
     try {
-      for (const idx of [...chunks.map((_, i) => i)]) {
-        await writer.ready;
-        await writer.write(chunks[idx]);
-        if (idx == chunks.length - 1) break;
+      // for (const idx of [...chunks.map((_, i) => i)]) {
+      //   await writer.ready;
+      //   await writer.write(chunks[idx]);
+      //   if (idx == chunks.length - 1) break;
 
-        await sleep(waitTimeMs);
-      }
+      //   await sleep(waitTimeMs);
+      // }
+      await writer.ready;
+      await writer.write(chunk);
+
       this.log("Writed", { chunk });
 
       return Success.value(null);
@@ -506,15 +499,23 @@ export class MrubyWriterConnector {
   async verify(code: Uint8Array) {
     const crc = calculateCrc8(code);
     const verifyRes = await this.sendCommand("verify");
-    console.log("Res", verifyRes);
+    console.log("verifyRes:", verifyRes);
     if (verifyRes.isFailure()) return verifyRes;
 
-    const crcRes = verifyRes.value.split(" ")[1];
-    console.log({ crc, crcRes });
+    const crcRes = verifyRes.value.match(/^\+OK (?<hash>[0-9a-zA-Z]+)\r?\n$/)
+      ?.groups?.hash;
+    console.log("crcRes", crcRes);
+    if (!crcRes) {
+      this.handleText("\r\n\u001b[31m Verify failed. \r\n");
+      return false;
+    }
+    console.log("crc", crc, "crcRes", parseInt(crcRes, 16));
     if (crc === parseInt(crcRes, 16)) {
-      this.handleText("\r\n Verify Success\r\n");
+      this.handleText("\r\n\u001b[32m Write success. \u001b[0m\r\n");
+      return true;
     } else {
-      this.handleText("\r\n Verify Failed\r\n");
+      this.handleText("\r\n\u001b[31m Write failed. \r\n");
+      return false;
     }
   }
 }

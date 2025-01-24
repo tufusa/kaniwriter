@@ -68,6 +68,10 @@ export const Home = () => {
   const [autoConnectMode, setAutoConnectMode] = useState<boolean>(
     autoConnectItem === "true"
   );
+  const autoVerifyItem = localStorage.getItem("autoVerify");
+  const [autoVerifyMode, setAutoVerifyMode] = useState<boolean>(
+    autoVerifyItem === "true"
+  );
 
   const [connector] = useState<MrubyWriterConnector>(
     new MrubyWriterConnector({
@@ -167,7 +171,7 @@ export const Home = () => {
 
   const writeCode = useCallback(async () => {
     if (!code) return;
-    const res = await connector.writeCode(code);
+    const res = await connector.writeCode(code, { autoVerify: autoVerifyMode });
     console.log(res);
     if (res.isFailure()) {
       alert(
@@ -176,7 +180,7 @@ export const Home = () => {
         }`
       );
     }
-  }, [t, connector, code]);
+  }, [t, connector, code, autoVerifyMode]);
 
   const onChangeVersion = useCallback(
     (version: Version) => {
@@ -418,6 +422,20 @@ export const Home = () => {
               label={t("自動接続(Experimental)")}
               sx={{ color: "black" }}
             />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  onChange={(ev) => {
+                    const checked = ev.currentTarget.checked;
+                    setAutoVerifyMode(checked);
+                    localStorage.setItem("autoVerify", `${checked}`);
+                  }}
+                  checked={autoVerifyMode}
+                />
+              }
+              label={t("自動検証")}
+              sx={{ color: "black" }}
+            />
           </Box>
         </Box>
         <Box
@@ -458,7 +476,9 @@ export const Home = () => {
             <ControlButton
               label={t("検証")}
               icon={<Plagiarism />}
-              onClick={() => code !== undefined? connector.verify(code): alert("NO CODE")}
+              onClick={() =>
+                code !== undefined ? connector.verify(code) : undefined
+              }
               disabled={
                 compileStatus.status !== "success" || !connector.isWriteMode
               }
