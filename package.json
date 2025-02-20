@@ -29,6 +29,8 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
+    "@shikijs/langs-precompiled": "^3.0.0",
+    "@shikijs/themes": "^3.0.0",
     "@types/node": "^20.8.10",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
