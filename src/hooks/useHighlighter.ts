@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { HighlighterCore, createHighlighterCore } from "shiki";
+import { HighlighterCore, createHighlighterCore } from "shiki/core";
+import { createJavaScriptRawEngine } from "shiki/engine/javascript";
 
 // カスタムフックの定義
 export const useHighlighter = () => {
@@ -9,9 +10,9 @@ export const useHighlighter = () => {
   useEffect(() => {
     const createHighlighter = async () => {
       const highlighter = await createHighlighterCore({
-        themes: [import("shiki/themes/github-light.mjs")],
-        langs: [import("shiki/langs/ruby.mjs")],
-        loadWasm: import("shiki/wasm"),
+        themes: [import("@shikijs/themes/github-light")],
+        langs: [import("@shikijs/langs-precompiled/ruby")],
+        engine: createJavaScriptRawEngine(),
       });
       setHighlighter(highlighter);
     };
