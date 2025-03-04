@@ -433,7 +433,7 @@ export const Home = () => {
                   checked={autoVerifyMode}
                 />
               }
-              label={t("自動検証")}
+              label={t("自動検証(Experimental)")}
               sx={{ color: "black" }}
             />
           </Box>
@@ -476,9 +476,7 @@ export const Home = () => {
             <ControlButton
               label={t("検証")}
               icon={<Plagiarism />}
-              onClick={() =>
-                code !== undefined ? connector.verify(code) : undefined
-              }
+              onClick={() => code && connector.verify(code)}
               disabled={
                 compileStatus.status !== "success" || !connector.isWriteMode
               }
