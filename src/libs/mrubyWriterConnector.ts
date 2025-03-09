@@ -258,7 +258,7 @@ export class MrubyWriterConnector {
 
     const writeRes = await this.sendData(binary);
     if (writeRes.isFailure()) return writeRes;
-    if (writeRes.value.startsWith("-ERR")) return writeRes;
+    if (writeRes.value.startsWith("-")) return writeRes;
     if (option?.execute) {
       await this.sendCommand("execute");
     }
@@ -474,7 +474,6 @@ export class MrubyWriterConnector {
       }
       await writer.ready;
       await writer.write(chunk);
-
       this.log("Writed", { chunk });
 
       return Success.value(null);
@@ -496,26 +495,27 @@ export class MrubyWriterConnector {
 
     return Success.value(line);
   }
-  async verify(code: Uint8Array) {
-    const crc = calculateCrc8(code);
+  async verify(code: Uint8Array): Promise<Result<void, Error>> {
+    const correctHash = calculateCrc8(code);
     const verifyRes = await this.sendCommand("verify");
     console.log("verifyRes:", verifyRes);
     if (verifyRes.isFailure()) return verifyRes;
 
-    const crcRes = verifyRes.value.match(/^\+OK (?<hash>[0-9a-zA-Z]+)\r?\n$/)
-      ?.groups?.hash;
-    console.log("crcRes", crcRes);
-    if (!crcRes) {
+    const targetHash = verifyRes.value.match(
+      /^\+OK (?<hash>[0-9a-zA-Z]+)\r?\n$/
+    )?.groups?.hash;
+    console.log("crcRes", targetHash);
+    if (!targetHash) {
       this.handleText("\r\n\u001b[31m Verify failed. \r\n");
-      return false;
+      return Failure.error("Target hash is not found.");
     }
-    console.log("crc", crc, "crcRes", parseInt(crcRes, 16));
-    if (crc === parseInt(crcRes, 16)) {
-      this.handleText("\r\n\u001b[32m Write success. \u001b[0m\r\n");
-      return true;
+    console.log("crc", correctHash, "crcRes", parseInt(targetHash, 16));
+    if (correctHash === parseInt(targetHash, 16)) {
+      this.handleText("\r\n\u001b[32m success to verify. \u001b[0m\r\n");
+      return Success.value(undefined);
     } else {
-      this.handleText("\r\n\u001b[31m Write failed. \r\n");
-      return false;
+      this.handleText("\r\n\u001b[31m failed to verify. \r\n");
+      return Failure.error("No port.");
     }
   }
 }
