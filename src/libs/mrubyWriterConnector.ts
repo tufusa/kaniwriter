@@ -515,7 +515,8 @@ export class MrubyWriterConnector {
       return Success.value(undefined);
     } else {
       this.handleText("\r\n\u001b[31m failed to verify. \r\n");
-      return Failure.error("No port.");
+      this.sendCommand("clear");
+      return Failure.error("Failed to verify.");
     }
   }
 }
