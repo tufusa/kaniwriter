@@ -27,7 +27,6 @@ export const UnsupportedBrowserModal = ({
     >
       <Sheet variant="outlined" sx={{ borderRadius: "0.5rem" }}>
         <Typography
-          fontFamily="'M PLUS Rounded 1c', sans-serif"
           level="h4"
           m={1}
           alignItems="center"
@@ -37,7 +36,6 @@ export const UnsupportedBrowserModal = ({
         <ModalClose variant="plain" sx={{ m: 0.5 }} />
 
         <Typography
-          fontFamily="'M PLUS Rounded 1c', sans-serif"
           fontSize="sm"
           m="0.5rem"
           whiteSpace="pre-line"
