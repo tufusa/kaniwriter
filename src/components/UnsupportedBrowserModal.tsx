@@ -1,5 +1,5 @@
 import { Modal, ModalClose, Sheet } from "@mui/joy";
-import { Typography } from "@mui/material";
+import { Typography } from "@mui/joy";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 interface UnsupportedBrowserModalProps {
