@@ -26,7 +26,7 @@ export const UnsupportedBrowserModal = ({
       <Sheet variant="outlined" sx={{ borderRadius: "0.5rem" }}>
         <Typography
           fontFamily="'M PLUS Rounded 1c', sans-serif"
-          variant="h5"
+          level="h4"
           m={1}
           alignItems="center"
         >
