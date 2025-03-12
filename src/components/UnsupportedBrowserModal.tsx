@@ -15,7 +15,6 @@ export const UnsupportedBrowserModal = ({
     <Modal
       open={open}
       onClose={() => setOpen(false)}
-      disableAutoFocus
       sx={{
         width: "90%",
         minWidth: "500px",
