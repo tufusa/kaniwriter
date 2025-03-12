@@ -26,20 +26,12 @@ export const UnsupportedBrowserModal = ({
       }}
     >
       <Sheet variant="outlined" sx={{ borderRadius: "0.5rem" }}>
-        <Typography
-          level="h4"
-          m={1}
-          alignItems="center"
-        >
+        <Typography level="h4" m={1} alignItems="center">
           {t("このブラウザはサポートされていません")}
         </Typography>
         <ModalClose variant="plain" sx={{ m: 0.5 }} />
 
-        <Typography
-          fontSize="sm"
-          m="0.5rem"
-          whiteSpace="pre-line"
-        >
+        <Typography fontSize="sm" m="0.5rem" whiteSpace="pre-line">
           {t("対応するブラウザを使ってください")}
         </Typography>
       </Sheet>
