@@ -1,4 +1,3 @@
-import { WritableStreamDefaultWriter } from "stream/web";
 import { calculateCrc8 } from "../utils/calculateCrc8";
 import { Failure, Result, Success } from "./result";
 
@@ -504,7 +503,7 @@ export class MrubyWriterConnector {
     const targetHash = verifyRes.value.match(
       /^\+OK (?<hash>[0-9a-zA-Z]+)\r?\n$/
     )?.groups?.hash;
-    console.log("crcRes", targetHash);
+    console.log("targetHash", targetHash);
     if (!targetHash) {
       this.handleText("\r\n\u001b[31m Verify failed. \r\n");
       return Failure.error("Target hash is not found.");
