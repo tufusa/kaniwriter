@@ -16,10 +16,12 @@ export const UnsupportedBrowserModal = ({
       open={open}
       onClose={() => setOpen(false)}
       sx={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
         width: "90%",
         minWidth: "500px",
         m: "auto",
-        alignContent: "center",
         maxWidth: "60rem",
       }}
     >
