@@ -274,11 +274,7 @@ export const Home = () => {
             }}
           >
             <Box sx={{ width: "calc(100% - 2rem)" }}>
-              <Typography
-                fontFamily={"'M PLUS Rounded 1c', sans-serif"}
-                variant="caption"
-                color="GrayText"
-              >
+              <Typography variant="caption" color="GrayText">
                 {t("コンパイラバージョン")}
               </Typography>
               <CompilerSelector
@@ -367,9 +363,7 @@ export const Home = () => {
                     }}
                   />
                   <FormLabel htmlFor={value.title}>
-                    <Typography fontFamily={"'M PLUS Rounded 1c', sans-serif"}>
-                      {value.title}
-                    </Typography>
+                    <Typography>{value.title}</Typography>
                   </FormLabel>
                   <img
                     src={value.image}
