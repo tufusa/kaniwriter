@@ -2,9 +2,9 @@ import {
   CheckCircleRounded as CheckCircleRoundedIcon,
   Edit as EditIcon,
   Flag as FlagIcon,
-  Plagiarism,
   Usb as UsbIcon,
   UsbOff as UsbOffIcon,
+  FindInPage as FindInPageIcon
 } from "@mui/icons-material";
 import {
   Autocomplete,
@@ -33,7 +33,6 @@ import { isTarget } from "libs/utility";
 import { useTranslation } from "react-i18next";
 import ESP32 from "/images/ESP32.png";
 import RBoard from "/images/Rboard.png";
-
 const targets = [
   {
     title: "RBoard",
@@ -471,7 +470,8 @@ export const Home = () => {
             />
             <ControlButton
               label={t("検証")}
-              icon={<Plagiarism />}
+              icon={<FindInPageIcon />
+              }
               onClick={() => code && connector.verify(code)}
               disabled={
                 compileStatus.status !== "success" || !connector.isWriteMode
