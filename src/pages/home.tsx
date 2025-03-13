@@ -1,10 +1,10 @@
 import {
   CheckCircleRounded as CheckCircleRoundedIcon,
   Edit as EditIcon,
+  FindInPage as FindInPageIcon,
   Flag as FlagIcon,
   Usb as UsbIcon,
   UsbOff as UsbOffIcon,
-  FindInPage as FindInPageIcon
 } from "@mui/icons-material";
 import {
   Autocomplete,
@@ -470,8 +470,7 @@ export const Home = () => {
             />
             <ControlButton
               label={t("検証")}
-              icon={<FindInPageIcon />
-              }
+              icon={<FindInPageIcon />}
               onClick={() => code && connector.verify(code)}
               disabled={
                 compileStatus.status !== "success" || !connector.isWriteMode
