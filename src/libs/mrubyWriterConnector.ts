@@ -506,7 +506,12 @@ export class MrubyWriterConnector {
       this.handleText("\r\n\u001b[31m Verify failed. \r\n");
       return Failure.error("Target hash is not found.");
     }
-    console.log("correctHash", correctHash, "targetHash", parseInt(targetHash, 16));
+    console.log(
+      "correctHash",
+      correctHash,
+      "targetHash",
+      parseInt(targetHash, 16)
+    );
     if (correctHash === parseInt(targetHash, 16)) {
       this.handleText("\r\n\u001b[32m success to verify. \u001b[0m\r\n");
       return Success.value(undefined);

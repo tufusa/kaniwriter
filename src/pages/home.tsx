@@ -23,7 +23,9 @@ import { CompilerSelector } from "components/CompilerSelector";
 import { ControlButton } from "components/ControlButton";
 import { Log } from "components/Log";
 import { SourceCodeTab } from "components/SourceCodeTab";
+import { UnsupportedBrowserModal } from "components/UnsupportedBrowserModal";
 import { useCompile } from "hooks/useCompile";
+import { useNotify } from "hooks/useNotify";
 import { useQuery } from "hooks/useQuery";
 import { Version, useVersions } from "hooks/useVersions";
 import { MrubyWriterConnector, Target } from "libs/mrubyWriterConnector";
@@ -91,18 +93,25 @@ export const Home = () => {
   const [version, setVersion] = useState<Version | undefined>();
   const [versions, getVersionsStatus] = useVersions();
   const [compileStatus, sourceCode, compile] = useCompile(id, setCode);
+  const notify = useNotify();
+
+  const notifyError = useCallback(
+    (title: string, error: Error) =>
+      notify({
+        title,
+        message: `${error.cause}`,
+        type: "danger",
+      }),
+    [notify]
+  );
 
   const read = useCallback(async () => {
     const res = await connector.startListen();
-    console.log(res);
     if (res.isFailure()) {
-      alert(
-        `${t("受信中にエラーが発生しました。")}\n${res.error}\ncause: ${
-          res.error.cause
-        }`
-      );
+      notifyError(t("受信中にエラーが発生しました。"), res.error);
+      console.error(res.error);
     }
-  }, [t, connector]);
+  }, [t, connector, notifyError]);
 
   //１秒ごとに書き込みモードに入ることを試みる
   const tryEntry = useCallback(async () => {
@@ -121,7 +130,7 @@ export const Home = () => {
         if (res.isFailure()) {
           clearInterval(interval);
           reject();
-          console.error(res);
+          console.error(res.error);
           return;
         }
       }, 1000);
@@ -133,23 +142,20 @@ export const Home = () => {
       async () => await navigator.serial.requestPort()
     );
     if (res.isFailure()) {
-      alert(`${t("ポートを取得できませんでした。")}\n${res.error}`);
-      console.log(res);
+      notifyError(t("ポートを取得できませんでした。"), res.error);
+      console.error(res.error);
       return;
     }
     await Promise.all([read(), tryEntry()]);
-  }, [t, connector, read, tryEntry]);
+  }, [t, connector, read, tryEntry, notifyError]);
 
   const disconnect = useCallback(async () => {
     const res = await connector.disconnect();
     if (res.isFailure()) {
-      alert(
-        `${t("切断中にエラーが発生しました。")}\n${res.error}\ncause: ${
-          res.error.cause
-        }`
-      );
+      notifyError(t("切断中にエラーが発生しました。"), res.error);
+      console.error(res.error);
     }
-  }, [t, connector]);
+  }, [t, connector, notifyError]);
 
   const send = useCallback(
     async (
@@ -159,14 +165,10 @@ export const Home = () => {
       const res = await connector.sendCommand(text, option);
       console.log(res);
       if (res.isFailure()) {
-        alert(
-          `${t("送信中にエラーが発生しました。")}\n${res.error}\ncause: ${
-            res.error.cause
-          }`
-        );
+        notifyError(t("送信中にエラーが発生しました。"), res.error);
       }
     },
-    [t, connector]
+    [t, connector, notifyError]
   );
 
   const writeCode = useCallback(async () => {
@@ -174,13 +176,10 @@ export const Home = () => {
     const res = await connector.writeCode(code, { autoVerify: autoVerifyMode });
     console.log(res);
     if (res.isFailure()) {
-      alert(
-        `${t("書き込み中にエラーが発生しました。")}\n${res.error}\ncause: ${
-          res.error.cause
-        }`
-      );
+      notifyError(t("書き込み中にエラーが発生しました。"), res.error);
+      console.error(res.error);
     }
-  }, [t, connector, code, autoVerifyMode]);
+  }, [t, connector, code, autoVerifyMode, notifyError]);
 
   const onChangeVersion = useCallback(
     (version: Version) => {
@@ -213,7 +212,7 @@ export const Home = () => {
         .connect(async () => ports[0])
         .then((result) => {
           if (result.isFailure()) {
-            console.log(result);
+            console.error(result.error);
             return;
           }
           tryEntry();
@@ -231,8 +230,11 @@ export const Home = () => {
     i18n.changeLanguage(locale);
   }, [i18n]);
 
+  // WebSerialAPIに対応するブラウザかどうかを確認
+  const isSupported = "serial" in navigator;
   return (
     <>
+      <UnsupportedBrowserModal defaultOpen={!isSupported} />
       <Box
         sx={{
           mb: "0.5rem",
