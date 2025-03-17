@@ -23,7 +23,7 @@ const enterWriteModeKeyword: Record<Target, RegExp> = {
 } as const;
 
 const exitWriteModeKeyword: Record<Target, RegExp> = {
-  ESP32: /mruby\/c v\d(.\d+)* start/,
+  ESP32: /mruby\/c v\d(.\d+)* start/, // ESP32は終了時メッセージが出ないため、再起動時の開始時メッセージで判定
   RBoard: /\+OK Execute mruby\/c\./,
 } as const;
 
@@ -257,11 +257,19 @@ export class MrubyWriterConnector {
 
     const writeRes = await this.sendData(binary);
     if (writeRes.isFailure()) return writeRes;
-    if (writeRes.value.startsWith("-")) return writeRes;
+    if (writeRes.value.startsWith("-"))
+      return Failure.error("failed to write.");
+    if (option?.autoVerify) {
+      const verifyRes = await this.verify(binary);
+      if (verifyRes.isFailure()) {
+        const clearRes = await this.sendCommand("clear");
+        if (clearRes.isFailure()) return clearRes;
+      }
+    }
+
     if (option?.execute) {
       await this.sendCommand("execute");
     }
-    if (option?.autoVerify) await this.verify(binary);
     return Success.value(writeRes.value);
   }
 
@@ -495,29 +503,26 @@ export class MrubyWriterConnector {
   async verify(code: Uint8Array): Promise<Result<void, Error>> {
     const correctHash = calculateCrc8(code);
     const verifyRes = await this.sendCommand("verify");
-    console.log("verifyRes:", verifyRes);
     if (verifyRes.isFailure()) return verifyRes;
 
     const targetHash = verifyRes.value.match(
       /^\+OK (?<hash>[0-9a-zA-Z]+)\r?\n$/
     )?.groups?.hash;
-    console.log("targetHash", targetHash);
     if (!targetHash) {
       this.handleText("\r\n\u001b[31m Verify failed. \r\n");
       return Failure.error("Target hash is not found.");
     }
-    console.log(
+    this.log(
       "correctHash",
       correctHash,
       "targetHash",
       parseInt(targetHash, 16)
     );
     if (correctHash === parseInt(targetHash, 16)) {
-      this.handleText("\r\n\u001b[32m success to verify. \u001b[0m\r\n");
+      this.handleText("\r\n\u001b[32m verify succeeded. \u001b[0m\r\n");
       return Success.value(undefined);
     } else {
       this.handleText("\r\n\u001b[31m failed to verify. \r\n");
-      this.sendCommand("clear");
       return Failure.error("Failed to verify.");
     }
   }

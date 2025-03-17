@@ -188,6 +188,17 @@ export const Home = () => {
     },
     [compile]
   );
+  const verify = useCallback(async () => {
+    if (!code) return;
+    const res = await connector.verify(code);
+    if (res.isFailure()) {
+      console.error(res.error);
+      const clearRes = await connector.sendCommand("clear");
+      if (clearRes.isFailure()) {
+        console.error(clearRes.error);
+      }
+    }
+  }, [connector, code]);
 
   useEffect(() => {
     if (getVersionsStatus != "success") return;
@@ -471,7 +482,7 @@ export const Home = () => {
             <ControlButton
               label={t("検証")}
               icon={<FindInPageIcon />}
-              onClick={() => code && connector.verify(code)}
+              onClick={() => code && verify()}
               disabled={
                 compileStatus.status !== "success" || !connector.isWriteMode
               }
