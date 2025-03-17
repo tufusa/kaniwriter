@@ -258,14 +258,14 @@ export class MrubyWriterConnector {
     const writeRes = await this.sendData(binary);
     if (writeRes.isFailure()) return writeRes;
     if (writeRes.value.startsWith("-"))
-      return Failure.error("failed to write.");
+      return Failure.error("Failed to write.");
 
     if (option?.autoVerify) {
       const verifyRes = await this.verify(binary);
       if (verifyRes.isFailure()) {
         const clearRes = await this.sendCommand("clear");
         if (clearRes.isFailure()) return clearRes;
-        return Failure.error("failed to verify.");
+        return Failure.error("Failed to verify.");
       }
     }
 
@@ -511,7 +511,7 @@ export class MrubyWriterConnector {
       /^\+OK (?<hash>[0-9a-zA-Z]+)\r?\n$/
     )?.groups?.hash;
     if (!targetHash) {
-      this.handleText("\r\n\u001b[31m Verify failed. \r\n");
+      this.handleText("\r\n\u001b[31m failed to verify. \r\n");
       return Failure.error("Target hash is not found.");
     }
     this.log(
