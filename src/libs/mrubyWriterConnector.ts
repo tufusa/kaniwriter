@@ -259,11 +259,13 @@ export class MrubyWriterConnector {
     if (writeRes.isFailure()) return writeRes;
     if (writeRes.value.startsWith("-"))
       return Failure.error("failed to write.");
+
     if (option?.autoVerify) {
       const verifyRes = await this.verify(binary);
       if (verifyRes.isFailure()) {
         const clearRes = await this.sendCommand("clear");
         if (clearRes.isFailure()) return clearRes;
+        return Failure.error("failed to verify.");
       }
     }
 
