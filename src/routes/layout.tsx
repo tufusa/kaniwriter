@@ -2,7 +2,7 @@ import { Box } from "@mui/joy";
 import { Header } from "components/Header";
 import { Outlet } from "react-router";
 
-export const Layout = () => (
+const Layout = () => (
   <Box
     sx={{
       width: "100%",
@@ -34,3 +34,5 @@ export const Layout = () => (
     </Box>
   </Box>
 );
+
+export default Layout;

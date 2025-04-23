@@ -13,7 +13,7 @@ import { useQuery } from "hooks/useQuery";
 import { useTarget } from "hooks/useTarget";
 import { useTranslation } from "react-i18next";
 
-export const Home = () => {
+const Home = () => {
   const { i18n } = useTranslation("ns1");
   const query = useQuery();
   const id = query.get("id") ?? undefined;
@@ -127,3 +127,5 @@ export const Home = () => {
     </>
   );
 };
+
+export default Home;
