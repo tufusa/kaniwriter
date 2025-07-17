@@ -6,9 +6,10 @@ import { useTranslation } from "react-i18next";
 
 interface CodeProps {
   sourceCode: string;
+  disable: boolean;
 }
 
-export const SourceCodeTab = ({ sourceCode }: CodeProps) => {
+export const SourceCodeTab = ({ sourceCode, disable }: CodeProps) => {
   const [html, setHtml] = useState<string>("");
   // 送信したmruby/cのソースコードを表示するかどうか
   const [isOpen, setIsOpen] = useState(false);
@@ -52,8 +53,13 @@ export const SourceCodeTab = ({ sourceCode }: CodeProps) => {
           sx={{
             height: "2rem",
           }}
+          disabled={disable}
         >
-          <Typography color="primary">
+          <Typography
+            sx={{
+              color: "inherit",
+            }}
+          >
             {isOpen ? t("ソースコードを非表示") : t("ソースコードを表示")}
           </Typography>
         </Button>
