@@ -1,5 +1,67 @@
 # Changelog
 
+## [1.0.0](https://github.com/tufusa/kaniwriter/compare/v1.4.0...v1.0.0) (2025-07-19)
+
+
+### ⚠ BREAKING CHANGES
+
+* チャンク最適化をv2のものに更新
+
+### Features
+
+* 　tryEnterWriteModeを追加した ([2520f5f](https://github.com/tufusa/kaniwriter/commit/2520f5fbcfd88b37ccc17eb4e8c47ccbda74ec56))
+* Browser RouterからFramework Routerに移行 ([#474](https://github.com/tufusa/kaniwriter/issues/474)) ([a309cec](https://github.com/tufusa/kaniwriter/commit/a309ceccb69ecee4fd86869115bd8465876d4092))
+* **experiment:** Sentryを試験的に導入 ([#549](https://github.com/tufusa/kaniwriter/issues/549)) ([87edb35](https://github.com/tufusa/kaniwriter/commit/87edb351155626ae01bda427cf3da6074a7dab47))
+* **test:** Release Please App ([395fc25](https://github.com/tufusa/kaniwriter/commit/395fc25e91528119da8f3e81042616dbd0f863e0))
+* verifyコマンドの実装,コマンドモードへの入り方をCRLFを送る形に変更 ([6b34c48](https://github.com/tufusa/kaniwriter/commit/6b34c48f8f77684ab8fb00199f629ce9ae0b6bc3))
+* verifyの実装 ([1a0cc5a](https://github.com/tufusa/kaniwriter/commit/1a0cc5aa08ab8e56562eeae2e3efc6ffd00303a1))
+* エラーをAlertではなく通知形式での表示に変更 ([#434](https://github.com/tufusa/kaniwriter/issues/434)) ([6d54b42](https://github.com/tufusa/kaniwriter/commit/6d54b4202cc1ab3b785692237badf4c0ff98f828))
+* コンパイルエラー時にメッセージを表示 ([3a4679c](https://github.com/tufusa/kaniwriter/commit/3a4679ce7d6d1e22edb827a1bf96b4bf72ae5ad3))
+* ソースコードをコピーできるようにした ([#559](https://github.com/tufusa/kaniwriter/issues/559)) ([1c5e9d0](https://github.com/tufusa/kaniwriter/commit/1c5e9d04df2b09e5a73d74c8f102e6e77164d916))
+* バージョン番号をヘッダーに表示 ([#592](https://github.com/tufusa/kaniwriter/issues/592)) ([463f7e5](https://github.com/tufusa/kaniwriter/commit/463f7e5c08364daa996141707c75959e0f26bbf2))
+* プログラムがない場合はソースコードタブを開けなくした ([#662](https://github.com/tufusa/kaniwriter/issues/662)) ([137c274](https://github.com/tufusa/kaniwriter/commit/137c27415d7d9fd8864ab4c077874615b0310d31))
+* 多言語対応 ([a0f69a8](https://github.com/tufusa/kaniwriter/commit/a0f69a82ae672c6e88280c7a59140588e84439d5))
+* 接続ボタンと切断ボタンを統合した ([#657](https://github.com/tufusa/kaniwriter/issues/657)) ([78c5fbf](https://github.com/tufusa/kaniwriter/commit/78c5fbfed10c9fdcd24c4bc03213f6b6012c7754))
+* 日本語フォントをKosugi Maruに変更 ([#426](https://github.com/tufusa/kaniwriter/issues/426)) ([e9ad42c](https://github.com/tufusa/kaniwriter/commit/e9ad42ce6a264a742608d73f37a5fcf7c505f95d))
+* 書き込み修了後にコードチェックするようにした ([85e6a2f](https://github.com/tufusa/kaniwriter/commit/85e6a2f26c806e0b6a42750783df5a23d5e5854d))
+* 自動でverifyコマンドを送信できるようにした ([5ea90e4](https://github.com/tufusa/kaniwriter/commit/5ea90e4de59097cd202d61f0b4ed0e3d73a1beac))
+
+
+### Bug Fixes
+
+* ci実行時にちゃんと警告が出るように ([7c5aaab](https://github.com/tufusa/kaniwriter/commit/7c5aaabb81978cd068817ba9a32e865ad6f31564))
+* CRC計算の修正，コメントアウトを外した ([0181003](https://github.com/tufusa/kaniwriter/commit/0181003ffaa770e459d0c50807ea96cfb88ebae4))
+* CRLFを定期的に送るようにした ([8ed4c0e](https://github.com/tufusa/kaniwriter/commit/8ed4c0ea6bf61709fe61e483a1f5956bd650db7b))
+* joyUIのAPI対応 ([ca95c38](https://github.com/tufusa/kaniwriter/commit/ca95c383d66678139cfe57745197ad3edc385dfe))
+* **lint:** 依存配列を修正 ([9e72305](https://github.com/tufusa/kaniwriter/commit/9e72305cab436d71a6adb92ebfde62eb8c4004bb))
+* Safariで背景のblurの表示がおかしくなるのを修正 ([e003043](https://github.com/tufusa/kaniwriter/commit/e00304316b2493112555566d473e28476e183bae))
+* SSH時に環境変数が読み込まれない問題の修正 ([#617](https://github.com/tufusa/kaniwriter/issues/617)) ([975992a](https://github.com/tufusa/kaniwriter/commit/975992a2a5d1e7306b8d18d9cd8bbf98de9ab692))
+* Typographyをmuiからjoyに修正 ([7ed79a2](https://github.com/tufusa/kaniwriter/commit/7ed79a28324e112d74fc1e7e4c782f8916b8a103))
+* アップロード後にソースマップを削除する設定を追加 ([#553](https://github.com/tufusa/kaniwriter/issues/553)) ([89dfbdd](https://github.com/tufusa/kaniwriter/commit/89dfbddd0f3b008684966910d767fd8ff0635a6d))
+* コマンドモードに入るキーワードの修正 ([3137aa0](https://github.com/tufusa/kaniwriter/commit/3137aa0594be2d3923917b74f21e62ec6ee9e51a))
+* コマンドモードに入る方法の変更 ([01d3ff8](https://github.com/tufusa/kaniwriter/commit/01d3ff8645db42fc8f5ef6f7d1f61498ff771f1a))
+* コマンドを送る部分にignoreResponseオプションを追加 ([dd39526](https://github.com/tufusa/kaniwriter/commit/dd39526c11ecf64ec40299e4b25ebeee05fdf064))
+* スクリプトのパスを修正 ([#618](https://github.com/tufusa/kaniwriter/issues/618)) ([f29df8e](https://github.com/tufusa/kaniwriter/commit/f29df8e3eab791b7cfc8d30fb19f317cf9d97062))
+* フォントを修正 ([41495f6](https://github.com/tufusa/kaniwriter/commit/41495f6f0aff991303aa1474b30945f35546b974))
+* ベースURLを変更した場合にもURLが正しく解決されるよう修正 ([#533](https://github.com/tufusa/kaniwriter/issues/533)) ([f760e81](https://github.com/tufusa/kaniwriter/commit/f760e812dfcc32811ebf4dde6100279391c6d077))
+* メインのBoxの高さをflexGrowで伸ばす ([#541](https://github.com/tufusa/kaniwriter/issues/541)) ([da4c94e](https://github.com/tufusa/kaniwriter/commit/da4c94e208e7ed5beffce30aa343d4d7eadc4b38))
+* 入力したコマンドのまま送信できるように ([bf1e236](https://github.com/tufusa/kaniwriter/commit/bf1e236aa5fd8cdd1fdadad3c4ddbe0f9c8735b1))
+* 実行したらwriteモードから抜けるようにした ([29f670e](https://github.com/tufusa/kaniwriter/commit/29f670e0475069275bbe39c8bc6c9ae42600f893))
+* 実行ボタンを押したのちに切断するときにエラーが発生していたのを修正 ([6d77ca4](https://github.com/tufusa/kaniwriter/commit/6d77ca46e8b6e17f897bb22112908e4ba5da6c8a))
+* 書き込みモード終了キーワードの変更 ([52649b2](https://github.com/tufusa/kaniwriter/commit/52649b27bcbd51daf2e2728f841d776f94691b3b))
+* 自動検証が失敗したときにclearしていたのを削除 ([#530](https://github.com/tufusa/kaniwriter/issues/530)) ([9f640d9](https://github.com/tufusa/kaniwriter/commit/9f640d9f70a3483fb724a4390013ff96d215f7f8))
+* 自動検証の場合の処理を自動実行の前に ([54adee3](https://github.com/tufusa/kaniwriter/commit/54adee38c2283491aa4857f045575b766cfbc838))
+* 自動補完されるコマンド以外も送信できるように修正 ([b8f9617](https://github.com/tufusa/kaniwriter/commit/b8f9617624c020cfcf9db144117f68968b3f25ac))
+
+
+### Miscellaneous Chores
+
+* release 0.1.0 ([02a2537](https://github.com/tufusa/kaniwriter/commit/02a25376e2150718e6d28ed6234ddda571eb7943))
+* release 0.2.0 ([#425](https://github.com/tufusa/kaniwriter/issues/425)) ([ab5e7f5](https://github.com/tufusa/kaniwriter/commit/ab5e7f5a4f8294f1be8f12a1c1a03a17c32c1ed5))
+* release 1.0.0 ([#463](https://github.com/tufusa/kaniwriter/issues/463)) ([0382dc4](https://github.com/tufusa/kaniwriter/commit/0382dc44c26ca0850c342460259ef8c00376cf33))
+* チャンク最適化をv2のものに更新 ([3c30b31](https://github.com/tufusa/kaniwriter/commit/3c30b31b0bb34c8254cae133450df5a0ac80e3a2))
+* リリース v0.1.0 ([e97898c](https://github.com/tufusa/kaniwriter/commit/e97898cd8056f928c9830fb5d5feabe4d5e0d852))
+
 ## [1.4.0](https://github.com/poporonnet/kaniwriter/compare/v1.3.0...v1.4.0) (2025-06-27)
 
 
